@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T07:21:18.415Z",
-  "currentIteration": 16,
+  "updatedAt": "2026-01-28T07:22:28.428Z",
+  "currentIteration": 17,
   "maxIterations": 0,
-  "tasksCompleted": 16,
+  "tasksCompleted": 17,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -89,8 +89,8 @@
       {
         "id": "US-013",
         "title": "game-ui-example 플러그인 수정",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-014",
@@ -284,6 +284,16 @@
       "durationMs": 114002,
       "startedAt": "2026-01-28T07:18:05.310Z",
       "endedAt": "2026-01-28T07:19:59.312Z"
+    },
+    {
+      "iteration": 17,
+      "status": "completed",
+      "taskId": "US-013",
+      "taskTitle": "game-ui-example 플러그인 수정",
+      "taskCompleted": true,
+      "durationMs": 78026,
+      "startedAt": "2026-01-28T07:20:00.387Z",
+      "endedAt": "2026-01-28T07:21:18.413Z"
     }
   ],
   "skippedTaskIds": [],

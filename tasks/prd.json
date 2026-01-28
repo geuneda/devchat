@@ -281,11 +281,12 @@
         "복원 후 /rpg status로 이전 상태 확인 가능"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-014",
         "US-012"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-017",
@@ -327,6 +328,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:21:18.414Z"
+    "updatedAt": "2026-01-28T07:22:28.418Z"
   }
 }
