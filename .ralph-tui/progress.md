@@ -157,6 +157,30 @@ after each iteration and included in agent prompts for context.
     - join 처리 시 시스템 메시지 브로드캐스트 (127-133줄)
 
 ---
+
+## 2026-01-28 - US-007
+
+- 구현한 내용: 채팅 메시지 송수신 기능 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-007 기능은 기존에 완전히 구현되어 있었음
+  - **호스트 메시지 전송** (`src/server/index.ts:264-271`):
+    - `broadcast()` 콜백에서 `chatManager.addMessage()` 호출로 메시지 저장
+    - `WSMessage { type: 'chat', payload: { message, sender } }` 형식으로 브로드캐스트
+  - **클라이언트 메시지 전송** (`src/client/index.ts:103-110`):
+    - `broadcast()` 콜백에서 WebSocket으로 전송 + 로컬 chatManager에 저장
+    - 동일한 `WSMessage` 형식 사용
+  - **서버 메시지 수신 및 브로드캐스트** (`src/server/index.ts:140-156`):
+    - 'chat' 타입 메시지 수신 시 `chatManager.addMessage()` 저장
+    - `broadcast()` 함수로 모든 클라이언트에게 전달
+  - **클라이언트 메시지 수신** (`src/client/index.ts:62-65`):
+    - 'chat' 타입 메시지 수신 시 `chatManager.addMessage(sender, message)` 호출
+  - **UI 메시지 표시** (`src/ui/index.ts:313-324`):
+    - 100ms 간격 폴링으로 새 메시지 감지
+    - `chatManager.formatMessage()` 로 `[시간] 닉네임: 내용` 형식으로 포맷
+    - 토글 키 홀드 상태와 무관하게 메시지 수신 처리 (스텔스 모드에서도 수신)
+
+---
 ## ✓ Iteration 4 - US-005: WebSocket 서버 호스팅 기능 수정
 *2026-01-28T05:06:11.985Z (52s)*
 
@@ -164,5 +188,14 @@ after each iteration and included in agent prompts for context.
 
 **Notes:**
 Rcjnt","type":"message","role":"assistant","content":[{"type":"text","text":"## 요약\n\nUS-005 (WebSocket 서버 호스팅 기능) 작업을 검증 완료했습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| `devchat host --port 8080 --name 테스트방` 실행 시 서버 시작 | ✅ | `src/cli/host.ts:12-58` |\n| 서버 시작 메시지에 포트, 방 이름 표시 | ✅ | `src/cli/host.ts:41-45` |\n| 서버가 지정 포트에서 연결 대기 | ✅ | `src/server/index.ts:67` |\n| Ctrl+C로 서버 종료 가능 | ✅ | `src/server/index.ts:223-224` |\n\n이 기능은 이미 완전히 구현되어 있었습니다. 타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+## ✓ Iteration 5 - US-006: WebSocket 클라이언트 연결 기능 수정
+*2026-01-28T05:07:10.050Z (57s)*
+
+**Status:** Completed
+
+**Notes:**
+,"content":[{"type":"text","text":"US-006 완료 조건을 모두 검증했습니다.\n\n## 요약\n\nUS-006 (WebSocket 클라이언트 연결 기능)은 이미 완전히 구현되어 있습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| `devchat join localhost:8080 --nick 테스터` 실행 시 연결 | ✅ | `src/cli/join.ts:29-34` |\n| 연결 성공 시 채팅 UI 표시 | ✅ | `src/client/index.ts:91-124` |\n| 연결 실패 시 에러 메시지 표시 | ✅ | `src/cli/join.ts:35-38`, `src/client/index.ts:135-138` |\n| 호스트 측에서 새 유저 접속 알림 표시 | ✅ | `src/server/index.ts:127-133` |\n\n타입체크와 빌드 모두 성공했습니다.\n\n
 
 ---

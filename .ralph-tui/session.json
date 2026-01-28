@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T05:07:09.598Z",
-  "currentIteration": 4,
+  "updatedAt": "2026-01-28T05:08:12.923Z",
+  "currentIteration": 5,
   "maxIterations": 0,
-  "tasksCompleted": 4,
+  "tasksCompleted": 5,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -47,8 +47,8 @@
       {
         "id": "US-006",
         "title": "WebSocket 클라이언트 연결 기능 수정",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-007",
@@ -164,6 +164,16 @@
       "durationMs": 52222,
       "startedAt": "2026-01-28T05:05:19.713Z",
       "endedAt": "2026-01-28T05:06:11.935Z"
+    },
+    {
+      "iteration": 5,
+      "status": "completed",
+      "taskId": "US-006",
+      "taskTitle": "WebSocket 클라이언트 연결 기능 수정",
+      "taskCompleted": true,
+      "durationMs": 56593,
+      "startedAt": "2026-01-28T05:06:12.993Z",
+      "endedAt": "2026-01-28T05:07:09.586Z"
     }
   ],
   "skippedTaskIds": [],
