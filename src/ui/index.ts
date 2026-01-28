@@ -3,6 +3,7 @@ import { ChatManager } from '../core/chat';
 import { RoomManager } from '../core/room';
 import { StealthModeManager, getThemeNames } from '../core/stealth';
 import { getConfig } from '../core/config';
+import { getUnknownCommandMessage } from '../core/errors';
 import { PluginManager } from '../plugins';
 import { User } from '../types';
 
@@ -294,8 +295,9 @@ export async function createChatUI(options: ChatUIOptions): Promise<void> {
         });
 
         if (!handled) {
-          // Regular message starting with /
-          broadcast(value);
+          // 알 수 없는 명령어 - 도움말 안내
+          const errorMsg = getUnknownCommandMessage(cmd);
+          chatManager.addSystemMessage(errorMsg);
         }
       } else {
         broadcast(value);

@@ -33,7 +33,7 @@ export const joinCommand = new Command('join')
         nick,
       });
     } catch (error) {
-      console.error('Failed to connect:', error);
+      // 에러 메시지는 client/index.ts에서 이미 출력됨
       process.exit(1);
     }
   });

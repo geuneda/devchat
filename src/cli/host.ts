@@ -1,7 +1,7 @@
 import { Command } from 'commander';
 import { getConfig } from '../core/config';
 import { startServer } from '../server';
-import { loadRoom, getSavedRooms, formatDate } from '../core/roomHistory';
+import { loadRoom, formatDate } from '../core/roomHistory';
 
 export const hostCommand = new Command('host')
   .description('Create and host a chat room')
@@ -52,7 +52,7 @@ export const hostCommand = new Command('host')
         resumeRoomId,
       });
     } catch (error) {
-      console.error('Failed to start server:', error);
+      // 에러 메시지는 server/index.ts에서 이미 출력됨
       process.exit(1);
     }
   });

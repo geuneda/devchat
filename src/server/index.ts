@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { RoomManager } from '../core/room';
 import { ChatManager } from '../core/chat';
 import { saveRoom, loadRoom, updateLastOpened } from '../core/roomHistory';
+import { getServerErrorMessage } from '../core/errors';
 import { WSMessage, ChatPayload, JoinPayload, User, UserListPayload, SavedRoom } from '../types';
 import { createChatUI } from '../ui';
 import { PluginManager } from '../plugins';
@@ -190,8 +191,10 @@ export async function startServer(options: ServerOptions): Promise<void> {
     });
   });
 
-  wss.on('error', (error) => {
-    console.error('Server error:', error);
+  wss.on('error', (error: Error) => {
+    const errorMessage = getServerErrorMessage(error, port);
+    console.error('');
+    console.error('❌ ' + errorMessage);
     throw error;
   });
 

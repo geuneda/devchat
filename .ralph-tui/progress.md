@@ -548,3 +548,72 @@ US-015 (방 복원 기능 구현)은 이미 완전히 구현되어 있습니다.
 타입체크와 빌드 모두 성공했습니다.
 
 ---
+## ✓ Iteration 14 - US-015: 방 복원 기능 구현
+*2026-01-28T07:13:07.302Z (81s)*
+
+**Status:** Completed
+
+**Notes:**
+US-015 (방 복원 기능 구현)은 이미 완전히 구현되어 있습니다.
+
+**완료 조건 충족 현황:**
+
+| 조건 | 상태 | 위치 |
+|------|------|------|
+| `devchat host --resume <roomId>`로 저장된 방 복원 | ✅ | `src/cli/host.ts:11,19-38` |
+| 저장된 채팅 내역 표시 | ✅ | `src/server/index.ts:40-51` |
+| 메뉴에서 저장된 방 선택하여 복원 가능 | ✅ | `src/ui/menu.ts:293-311` |
+| 복원 시 이전 설정(방 이름, 포트) 유지 | ✅ | `src/cli/host.ts:29-31`, `src/ui/menu.ts:306-309` |
+
+타입체크와 빌드 모두 성공했습니다.
+
+---
+
+## 2026-01-28 - US-018
+
+- 구현한 내용: 에러 처리 및 사용자 피드백 개선
+- 변경된 파일:
+  - `src/core/errors.ts` - 신규 파일: 에러 처리 유틸리티 모듈
+  - `src/client/index.ts` - 연결 에러 및 연결 끊김 시 사용자 친화적 메시지
+  - `src/server/index.ts` - 포트 에러 시 사용자 친화적 메시지
+  - `src/ui/index.ts` - 잘못된 명령어 입력 시 도움말 안내
+  - `src/cli/host.ts` - 중복 에러 출력 제거
+  - `src/cli/join.ts` - 중복 에러 출력 제거
+- **배운 점:**
+  - **에러 처리 모듈화** (`src/core/errors.ts`):
+    - 에러 타입 분류: `ConnectionErrorType` (ECONNREFUSED, ENOTFOUND, ETIMEDOUT, ECONNRESET, EADDRINUSE, EACCES)
+    - `getErrorType(error)`: Node.js 에러 코드를 분석하여 타입 반환
+    - `getConnectionErrorMessage(error, host, port)`: 연결 에러에 대한 상세한 안내 메시지
+    - `getServerErrorMessage(error, port)`: 서버 시작 에러에 대한 상세한 안내 메시지
+    - `getDisconnectMessage(host, port, wasHost)`: 연결 끊김 시 안내 메시지
+    - `getUnknownCommandMessage(command)`: 알 수 없는 명령어 안내 메시지
+  - **연결 에러 처리 개선** (`src/client/index.ts:130-139`):
+    - `ws.on('close')`: 연결 끊김 시 재연결 안내 메시지 출력
+    - `ws.on('error')`: 에러 타입에 따른 상세한 원인 및 해결 방법 제시
+  - **포트 에러 처리 개선** (`src/server/index.ts:194-198`):
+    - EADDRINUSE: 다른 포트 사용 제안 + 포트 확인 명령어 안내
+    - EACCES: 1024 이상 포트 사용 제안
+  - **명령어 에러 처리 개선** (`src/ui/index.ts:297-300`):
+    - 알 수 없는 명령어 입력 시 일반 메시지로 전송하지 않고 `/help` 안내 표시
+
+---
+## ✓ Iteration 15 - US-018: 에러 처리 및 사용자 피드백 개선
+*2026-01-28*
+
+**Status:** Completed
+
+**Notes:**
+US-018 (에러 처리 및 사용자 피드백 개선)을 구현했습니다.
+
+**완료 조건 충족 현황:**
+
+| 조건 | 상태 | 위치 |
+|------|------|------|
+| 연결 실패 시 명확한 에러 메시지 | ✅ | `src/core/errors.ts:39-77`, `src/client/index.ts:135-139` |
+| 잘못된 명령어 입력 시 도움말 안내 | ✅ | `src/core/errors.ts:110-114`, `src/ui/index.ts:297-300` |
+| 포트 사용 중일 때 적절한 에러 메시지 | ✅ | `src/core/errors.ts:82-103`, `src/server/index.ts:194-198` |
+| 네트워크 끊김 시 재연결 안내 또는 자동 처리 | ✅ | `src/core/errors.ts:105-108`, `src/client/index.ts:131-133` |
+
+타입체크와 빌드 모두 성공했습니다.
+
+---

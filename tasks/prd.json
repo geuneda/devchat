@@ -317,13 +317,14 @@
         "네트워크 끊김 시 재연결 안내 또는 자동 처리"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-007"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:13:07.245Z"
+    "updatedAt": "2026-01-28T07:18:04.233Z"
   }
 }

@@ -2,6 +2,7 @@ import WebSocket from 'ws';
 import { nanoid } from 'nanoid';
 import { RoomManager } from '../core/room';
 import { ChatManager } from '../core/chat';
+import { getConnectionErrorMessage, getDisconnectMessage } from '../core/errors';
 import { WSMessage, ChatPayload, JoinPayload, User, UserListPayload } from '../types';
 import { createChatUI } from '../ui';
 
@@ -128,12 +129,15 @@ export async function connectToServer(options: ClientOptions): Promise<void> {
     });
 
     ws.on('close', () => {
-      console.log('\nDisconnected from server');
+      console.log('');
+      console.error('❌ ' + getDisconnectMessage(host, port, false));
       process.exit(0);
     });
 
-    ws.on('error', (error) => {
-      console.error('Connection error:', error.message);
+    ws.on('error', (error: Error) => {
+      const errorMessage = getConnectionErrorMessage(error, host, port);
+      console.error('');
+      console.error('❌ ' + errorMessage);
       reject(error);
     });
   });
