@@ -99,10 +99,11 @@
         "호스트 측에서 새 유저 접속 알림 표시"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-005"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-007",
@@ -314,6 +315,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T05:06:11.936Z"
+    "updatedAt": "2026-01-28T05:07:09.590Z"
   }
 }

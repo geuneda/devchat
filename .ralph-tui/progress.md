@@ -136,3 +136,33 @@ after each iteration and included in agent prompts for context.
 :"text","text":"## 요약\n\nUS-003 (Join Room 화면 구현 및 수정) 작업을 검증 완료했습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| 메인 메뉴에서 Join Room 선택 시 조인 설정 화면으로 이동 | ✅ | `src/ui/menu.ts:98-101` |\n| 서버 주소(host:port) 입력 가능 | ✅ | `src/ui/menu.ts:671-683` |\n| 닉네임 입력 가능 | ✅ | `src/ui/menu.ts:693-705` |\n| Enter로 연결 시도 | ✅ | `src/ui/menu.ts:793-806` |\n| Esc로 메인 메뉴로 돌아감 | ✅ | `src/ui/menu.ts:812-814` |\n\nJoin Room 화면(`showJoinMenu()`)은 이미 US-001 작업 시 함께 구현되어 있었습니다. 타입체크와 빌드 모두 성공했습니다.\n\n
 
 ---
+
+## 2026-01-28 - US-006
+
+- 구현한 내용: WebSocket 클라이언트 연결 기능 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-006 기능은 기존에 완전히 구현되어 있었음
+  - CLI 명령어: `src/cli/join.ts` - Commander.js 기반
+    - `<address>` 인자: 서버 주소 (host:port 형식)
+    - `--nick <nickname>`: 닉네임 설정
+    - 주소 파싱 로직 (16-23줄): 콜론 포함 시 분리, 아니면 기본 포트 사용
+  - WebSocket 클라이언트: `src/client/index.ts`
+    - `connectToServer({ host, port, nick })` 함수 (14-140줄)
+    - 연결 성공 시 join 메시지 전송 (35-40줄)
+    - 첫 메시지 수신 후 채팅 UI 시작 (91-124줄)
+    - 에러 핸들러로 연결 실패 처리 (135-138줄)
+  - 서버 측 새 유저 알림: `src/server/index.ts`
+    - `wss.on('connection')` 핸들러 (98-190줄)
+    - join 처리 시 시스템 메시지 브로드캐스트 (127-133줄)
+
+---
+## ✓ Iteration 4 - US-005: WebSocket 서버 호스팅 기능 수정
+*2026-01-28T05:06:11.985Z (52s)*
+
+**Status:** Completed
+
+**Notes:**
+Rcjnt","type":"message","role":"assistant","content":[{"type":"text","text":"## 요약\n\nUS-005 (WebSocket 서버 호스팅 기능) 작업을 검증 완료했습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| `devchat host --port 8080 --name 테스트방` 실행 시 서버 시작 | ✅ | `src/cli/host.ts:12-58` |\n| 서버 시작 메시지에 포트, 방 이름 표시 | ✅ | `src/cli/host.ts:41-45` |\n| 서버가 지정 포트에서 연결 대기 | ✅ | `src/server/index.ts:67` |\n| Ctrl+C로 서버 종료 가능 | ✅ | `src/server/index.ts:223-224` |\n\n이 기능은 이미 완전히 구현되어 있었습니다. 타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
