@@ -499,3 +499,52 @@ US-014 (방 저장 기능 구현)은 이미 완전히 구현되어 있습니다.
 타입체크와 빌드 모두 성공했습니다.
 
 ---
+## ✓ Iteration 13 - US-014: 방 저장 기능 구현
+*2026-01-28T07:11:45.253Z (75s)*
+
+**Status:** Completed
+
+**Notes:**
+nt":[{"type":"text","text":"## 요약\n\nUS-014 (방 저장 기능 구현)은 이미 완전히 구현되어 있습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| Ctrl+C로 방 종료 시 자동 저장 | ✅ | `src/server/index.ts:198-225` |\n| 채팅 내역(최대 1000개) 저장 | ✅ | `src/core/chat.ts:6,20-22` |\n| 방 설정(이름, 포트, 닉네임) 저장 | ✅ | `src/core/roomHistory.ts:35-44` |\n| 저장 위치: ~/.config/devchat/room-history.json | ✅ | `src/core/roomHistory.ts:9-15` |\n| devchat rooms 명령어로 저장된 방 목록 확인 | ✅ | `src/cli/rooms.ts:4-36` |\n\n타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+
+## 2026-01-28 - US-015
+
+- 구현한 내용: 방 복원 기능 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-015 기능은 기존에 완전히 구현되어 있었음
+  - **CLI `--resume` 옵션** (`src/cli/host.ts:11-38`):
+    - `loadRoom(options.resume)`으로 저장된 방 로드
+    - 저장된 설정(port, name, hostNick) 복원, CLI 옵션으로 덮어쓰기 가능
+    - `startServer({ resumeRoomId })`로 서버에 복원 정보 전달
+  - **서버 측 복원 로직** (`src/server/index.ts:39-51`):
+    - `chatManager.setMessages(savedRoom.messages)`: 채팅 내역 복원
+    - `pluginManager.restoreAllPluginStates(savedRoom.pluginStates)`: 플러그인 상태 복원
+    - `updateLastOpened(resumeRoomId)`: 마지막 열림 시각 업데이트
+  - **메뉴 UI 복원** (`src/ui/menu.ts:293-311`):
+    - 저장된 방 선택 시 `startServer({ resumeRoomId: selectedRoom.id })`로 바로 시작
+    - 저장된 port, roomName, hostNick 그대로 사용
+
+---
+## ✓ Iteration 14 - US-015: 방 복원 기능 구현
+*2026-01-28*
+
+**Status:** Completed
+
+**Notes:**
+US-015 (방 복원 기능 구현)은 이미 완전히 구현되어 있습니다.
+
+**완료 조건 충족 현황:**
+
+| 조건 | 상태 | 위치 |
+|------|------|------|
+| `devchat host --resume <roomId>`로 저장된 방 복원 | ✅ | `src/cli/host.ts:11,19-38` |
+| 저장된 채팅 내역 표시 | ✅ | `src/server/index.ts:40-51` |
+| 메뉴에서 저장된 방 선택하여 복원 가능 | ✅ | `src/ui/menu.ts:293-311` |
+| 복원 시 이전 설정(방 이름, 포트) 유지 | ✅ | `src/cli/host.ts:29-31`, `src/ui/menu.ts:306-309` |
+
+타입체크와 빌드 모두 성공했습니다.
+
+---

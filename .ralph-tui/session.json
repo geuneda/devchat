@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T07:11:45.210Z",
-  "currentIteration": 12,
+  "updatedAt": "2026-01-28T07:13:07.246Z",
+  "currentIteration": 13,
   "maxIterations": 0,
-  "tasksCompleted": 12,
+  "tasksCompleted": 13,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -95,8 +95,8 @@
       {
         "id": "US-014",
         "title": "방 저장 기능 구현",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-015",
@@ -244,6 +244,16 @@
       "durationMs": 178947,
       "startedAt": "2026-01-28T07:07:30.205Z",
       "endedAt": "2026-01-28T07:10:29.152Z"
+    },
+    {
+      "iteration": 13,
+      "status": "completed",
+      "taskId": "US-014",
+      "taskTitle": "방 저장 기능 구현",
+      "taskCompleted": true,
+      "durationMs": 75012,
+      "startedAt": "2026-01-28T07:10:30.195Z",
+      "endedAt": "2026-01-28T07:11:45.207Z"
     }
   ],
   "skippedTaskIds": [],
