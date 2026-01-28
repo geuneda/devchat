@@ -270,3 +270,41 @@ me`, `--port`: 설정값 변경","+    - `--list`, `--themes`, `--reset`, `--pat
     - `registerKey(screen, 'escape', ...)` 로 메인 메뉴 복귀
 
 ---
+## ✓ Iteration 8 - US-004: Settings 화면 구현 및 수정
+*2026-01-28T07:04:01.338Z (65s)*
+
+**Status:** Completed
+
+**Notes:**
+assistant","content":[{"type":"text","text":"## 요약\n\nUS-004 (Settings 화면 구현 및 수정)은 이미 완전히 구현되어 있습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| 메인 메뉴에서 Settings 선택 시 설정 화면으로 이동 | ✅ | `src/ui/menu.ts:103-105` |\n| 닉네임, 토글 키, 테마, 포트 설정 변경 가능 | ✅ | `src/ui/menu.ts:854-949` |\n| Tab으로 입력 필드 간 이동 | ✅ | `src/ui/menu.ts:1080-1081` |\n| 변경사항이 저장됨 | ✅ | `src/ui/menu.ts:1083-1095` (`setConfig()` 호출) |\n| Esc로 메인 메뉴로 돌아감 | ✅ | `src/ui/menu.ts:1101-1103` |\n\n타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+
+## 2026-01-28 - US-008
+
+- 구현한 내용: 스텔스 모드 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-008 기능은 기존에 완전히 구현되어 있었음
+  - **StealthModeManager 클래스** (`src/core/stealth.ts:211-273`):
+    - `isActive` 플래그로 스텔스 모드 상태 관리
+    - `startFakeOutput(callback)`: setInterval로 테마별 가짜 출력 생성
+    - `stopFakeOutput()`: 출력 생성 중지
+  - **위장 테마** (`src/core/stealth.ts:4-201`):
+    - 5가지 테마: npm-build, git-log, docker-logs, compile, pytest
+    - 각 테마는 `generateLine()` 함수로 랜덤 출력 생성
+    - `interval: { min, max }` 로 출력 간격 조절
+  - **UI 통합** (`src/ui/index.ts`):
+    - `stealthBox` (41-59줄): 가짜 출력 표시 영역
+    - `chatContainer` (62-68줄): 실제 채팅 화면 (hidden: true 기본)
+    - 토글 키 핸들러 (243-273줄): keypress 이벤트로 키 홀드 감지
+    - 200ms 타임아웃으로 키 릴리즈 시뮬레이션 (254-262줄)
+  - **새 메시지 알림** (`src/ui/index.ts:151-210`):
+    - `newMsgIndicator`: 우하단에 빨간 점 표시
+    - `startBlinking()`: 500ms 간격 깜빡임
+    - 채팅 화면 표시 시 `stopBlinking()` 호출
+  - **테마 변경** (`src/ui/index.ts:352-359`):
+    - Ctrl+T 키로 순환 변경
+    - `stealthManager.setTheme()` 호출
+
+---

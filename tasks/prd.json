@@ -135,10 +135,11 @@
         "Ctrl+T로 위장 테마 변경 가능"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-007"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-009",
@@ -318,6 +319,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:04:01.306Z"
+    "updatedAt": "2026-01-28T07:05:33.957Z"
   }
 }
