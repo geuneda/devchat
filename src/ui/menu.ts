@@ -11,15 +11,20 @@ interface MenuOption {
 }
 
 // 현재 활성화된 키 핸들러 목록 (정리용)
-let currentKeyHandlers: string[] = [];
+type KeyHandler = (ch: unknown, key: blessed.Widgets.Events.IKeyEventArg) => void;
+interface RegisteredKeyHandler {
+  keys: string[];
+  handler: KeyHandler;
+}
+let currentKeyHandlers: RegisteredKeyHandler[] = [];
 
 /**
  * 화면의 모든 커스텀 키 핸들러를 제거합니다.
  */
 function clearScreenKeys(screen: blessed.Widgets.Screen): void {
-  currentKeyHandlers.forEach((key) => {
+  currentKeyHandlers.forEach(({ keys, handler }) => {
     try {
-      screen.unkey(key);
+      keys.forEach((key) => screen.unkey(key, handler));
     } catch {
       // 이미 제거된 핸들러는 무시
     }
@@ -32,12 +37,9 @@ function clearScreenKeys(screen: blessed.Widgets.Screen): void {
  */
 function registerKey(screen: blessed.Widgets.Screen, keys: string | string[], handler: () => void): void {
   const keyArray = Array.isArray(keys) ? keys : [keys];
-  keyArray.forEach((k) => {
-    if (!currentKeyHandlers.includes(k)) {
-      currentKeyHandlers.push(k);
-    }
-  });
-  screen.key(keys, handler);
+  const wrappedHandler: KeyHandler = () => handler();
+  currentKeyHandlers.push({ keys: keyArray, handler: wrappedHandler });
+  screen.key(keys, wrappedHandler);
 }
 
 /**
@@ -311,7 +313,7 @@ function showSavedRoomsMenu(screen: blessed.Widgets.Screen, savedRooms: SavedRoo
 
   // 삭제 키 핸들러
   registerKey(screen, ['d', 'D'], () => {
-    const selectedIndex = roomList.selected as number;
+    const selectedIndex = (roomList as unknown as { selected: number }).selected;
     if (selectedIndex < savedRooms.length) {
       const selectedRoom = savedRooms[selectedIndex];
       showDeleteConfirmation(screen, selectedRoom, savedRooms);
@@ -792,11 +794,15 @@ function showJoinMenu(screen: blessed.Widgets.Screen): void {
     const address = addressInput.getValue() || `localhost:${config.port}`;
     const nick = nickInput.getValue() || config.nick;
 
+    // Parse address into host and port
+    const [host, portStr] = address.split(':');
+    const port = parseInt(portStr) || config.port;
+
     screen.destroy();
 
     // Import and start client
     const { connectToServer } = await import('../client');
-    await connectToServer({ address, nick });
+    await connectToServer({ host, port, nick });
   });
 
   cancelBtn.on('press', () => {
@@ -1035,11 +1041,14 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     });
   });
 
+  // Helper to get themeList selected index
+  const getThemeListSelected = (): number => (themeList as unknown as { selected: number }).selected;
+
   // 위/아래 화살표 키 핸들링
   registerKey(screen, 'down', () => {
     if (themeListFocused) {
       // 테마 리스트 내에서 아래로 이동
-      const currentSelect = themeList.selected as number;
+      const currentSelect = getThemeListSelected();
       if (currentSelect < themes.length - 1) {
         themeList.select(currentSelect + 1);
         screen.render();
@@ -1055,7 +1064,7 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
   registerKey(screen, 'up', () => {
     if (themeListFocused) {
       // 테마 리스트 내에서 위로 이동
-      const currentSelect = themeList.selected as number;
+      const currentSelect = getThemeListSelected();
       if (currentSelect > 0) {
         themeList.select(currentSelect - 1);
         screen.render();
@@ -1074,7 +1083,7 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
   saveBtn.on('press', () => {
     const nick = nickInput.getValue();
     const toggleKey = toggleInput.getValue();
-    const selectedTheme = themes[themeList.selected as number];
+    const selectedTheme = themes[getThemeListSelected()];
     const port = parseInt(portInput.getValue());
 
     if (nick) setConfig('nick', nick);

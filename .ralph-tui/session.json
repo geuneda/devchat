@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "sessionId": "6de6dfe1-d100-4f14-82a5-839e55b784cc",
+  "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
-  "startedAt": "2026-01-28T04:42:44.928Z",
-  "updatedAt": "2026-01-28T04:42:44.928Z",
+  "startedAt": "2026-01-28T04:59:17.064Z",
+  "updatedAt": "2026-01-28T05:03:01.252Z",
   "currentIteration": 0,
   "maxIterations": 0,
   "tasksCompleted": 0,
@@ -11,8 +11,118 @@
   "agentPlugin": "claude",
   "trackerState": {
     "plugin": "json",
-    "totalTasks": 0,
-    "tasks": []
+    "prdPath": "./tasks/prd.json",
+    "totalTasks": 18,
+    "tasks": [
+      {
+        "id": "US-001",
+        "title": "메인 메뉴 UI 키보드 네비게이션 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-002",
+        "title": "Host Room 화면 구현 및 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-003",
+        "title": "Join Room 화면 구현 및 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-004",
+        "title": "Settings 화면 구현 및 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-005",
+        "title": "WebSocket 서버 호스팅 기능 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-006",
+        "title": "WebSocket 클라이언트 연결 기능 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-007",
+        "title": "채팅 메시지 송수신 기능 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-008",
+        "title": "스텔스 모드 구현 및 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-009",
+        "title": "위장 테마 시스템 구현",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-010",
+        "title": "내장 채팅 명령어 구현",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-011",
+        "title": "플러그인 로더 시스템 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-012",
+        "title": "text-rpg 플러그인 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-013",
+        "title": "game-ui-example 플러그인 수정",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-014",
+        "title": "방 저장 기능 구현",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-015",
+        "title": "방 복원 기능 구현",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-016",
+        "title": "플러그인 상태 저장/복원 구현",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-017",
+        "title": "CLI 명령어 전체 점검",
+        "status": "open",
+        "completedInSession": false
+      },
+      {
+        "id": "US-018",
+        "title": "에러 처리 및 사용자 피드백 개선",
+        "status": "open",
+        "completedInSession": false
+      }
+    ]
   },
   "iterations": [],
   "skippedTaskIds": [],
