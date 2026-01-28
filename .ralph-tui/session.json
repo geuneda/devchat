@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T05:05:18.645Z",
-  "currentIteration": 2,
+  "updatedAt": "2026-01-28T05:06:11.937Z",
+  "currentIteration": 3,
   "maxIterations": 0,
-  "tasksCompleted": 2,
+  "tasksCompleted": 3,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -29,8 +29,8 @@
       {
         "id": "US-003",
         "title": "Join Room 화면 구현 및 수정",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-004",
@@ -144,6 +144,16 @@
       "durationMs": 86768,
       "startedAt": "2026-01-28T05:03:02.292Z",
       "endedAt": "2026-01-28T05:04:29.060Z"
+    },
+    {
+      "iteration": 3,
+      "status": "completed",
+      "taskId": "US-003",
+      "taskTitle": "Join Room 화면 구현 및 수정",
+      "taskCompleted": true,
+      "durationMs": 48527,
+      "startedAt": "2026-01-28T05:04:30.115Z",
+      "endedAt": "2026-01-28T05:05:18.642Z"
     }
   ],
   "skippedTaskIds": [],

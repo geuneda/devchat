@@ -82,10 +82,11 @@
         "Ctrl+C로 서버 종료 가능"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-002"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-006",
@@ -313,6 +314,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T05:05:18.642Z"
+    "updatedAt": "2026-01-28T05:06:11.936Z"
   }
 }

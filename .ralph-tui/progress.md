@@ -90,6 +90,25 @@ after each iteration and included in agent prompts for context.
 
 ---
 
+## 2026-01-28 - US-005
+
+- 구현한 내용: WebSocket 서버 호스팅 기능 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-005 기능은 기존에 완전히 구현되어 있었음
+  - CLI 명령어: `src/cli/host.ts` - Commander.js 기반
+    - `-p, --port <port>`: 포트 설정 (기본값: config.port)
+    - `-n, --name <name>`: 방 이름 설정 (기본값: "DevChat Room")
+    - `--nick <nickname>`: 닉네임 설정
+    - `-r, --resume <roomId>`: 저장된 방 복원
+  - WebSocket 서버: `src/server/index.ts`
+    - `WebSocketServer({ port })` 로 서버 생성 (67줄)
+    - 서버 시작 메시지 출력 (41-45줄, 242-248줄)
+    - SIGINT/SIGTERM 핸들러로 Ctrl+C 종료 처리 (223-224줄)
+    - 종료 시 방 자동 저장 기능 포함 (199-221줄)
+
+---
+
 ## ✓ Iteration 1 - US-001: 메인 메뉴 UI 키보드 네비게이션 수정
 *2026-01-28T05:03:01.287Z (176s)*
 
@@ -106,5 +125,14 @@ after each iteration and included in agent prompts for context.
 
 **Notes:**
 --|------|\n| 메인 메뉴에서 Host Room 선택 시 호스트 설정 화면으로 이동 | ✅ | `showHostMenu()` 208-219줄 |\n| 방 이름, 포트, 닉네임 입력 가능 | ✅ | `showNewRoomForm()` 437-637줄 |\n| 저장된 방이 있으면 목록으로 먼저 표시 | ✅ | `showSavedRoomsMenu()` 224-332줄 |\n| 새로운 방 만들기 옵션 선택 가능 | ✅ | 257줄 - \"+ 새로운 방 만들기\" 항목 |\n| Esc로 메인 메뉴로 돌아감 | ✅ | 각 화면의 escape 키 핸들러 |\n\n**추가 수정사항:**\n- `src/plugins/ui.ts`의 타입 에러 수정:\n  - `InputOptions.censor` 타입을 `string`에서 `boolean`으로 변경\n  - `ProgressBarElement` style에서 불필요한 `border` 속성 제거\n\n타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+## ✓ Iteration 3 - US-003: Join Room 화면 구현 및 수정
+*2026-01-28T05:05:18.708Z (49s)*
+
+**Status:** Completed
+
+**Notes:**
+:"text","text":"## 요약\n\nUS-003 (Join Room 화면 구현 및 수정) 작업을 검증 완료했습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| 메인 메뉴에서 Join Room 선택 시 조인 설정 화면으로 이동 | ✅ | `src/ui/menu.ts:98-101` |\n| 서버 주소(host:port) 입력 가능 | ✅ | `src/ui/menu.ts:671-683` |\n| 닉네임 입력 가능 | ✅ | `src/ui/menu.ts:693-705` |\n| Enter로 연결 시도 | ✅ | `src/ui/menu.ts:793-806` |\n| Esc로 메인 메뉴로 돌아감 | ✅ | `src/ui/menu.ts:812-814` |\n\nJoin Room 화면(`showJoinMenu()`)은 이미 US-001 작업 시 함께 구현되어 있었습니다. 타입체크와 빌드 모두 성공했습니다.\n\n
 
 ---
