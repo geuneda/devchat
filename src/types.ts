@@ -96,3 +96,69 @@ export interface StealthTheme {
   generateLine: () => string;
   interval: { min: number; max: number }; // ms between lines
 }
+
+// Plugin UI types
+export interface PluginUIBoxOptions {
+  top?: number | string;
+  left?: number | string;
+  right?: number | string;
+  bottom?: number | string;
+  width?: number | string;
+  height?: number | string;
+  content?: string;
+  label?: string;
+  border?: 'line' | 'bg' | boolean;
+  scrollable?: boolean;
+  style?: {
+    fg?: string;
+    bg?: string;
+    border?: { fg?: string; bg?: string };
+  };
+}
+
+export interface PluginUIListOptions extends PluginUIBoxOptions {
+  items?: string[];
+  keys?: boolean;
+  vi?: boolean;
+  mouse?: boolean;
+  selectedStyle?: {
+    fg?: string;
+    bg?: string;
+    bold?: boolean;
+  };
+}
+
+export interface PluginUIProgressOptions extends PluginUIBoxOptions {
+  orientation?: 'horizontal' | 'vertical';
+  filled?: number;
+  pch?: string;
+  ch?: string;
+  style?: {
+    fg?: string;
+    bg?: string;
+    bar?: { fg?: string; bg?: string };
+  };
+}
+
+export interface PluginUIInputOptions extends PluginUIBoxOptions {
+  value?: string;
+  secret?: boolean;
+  censor?: string;
+}
+
+/**
+ * Plugin with UI support
+ * 플러그인이 전체 화면 UI를 가질 수 있도록 확장된 인터페이스
+ */
+export interface PluginWithUI extends Plugin {
+  /**
+   * UI 생성 함수
+   * 플러그인 명령어로 UI를 표시할 때 호출됩니다.
+   */
+  createUI?: () => void | Promise<void>;
+  
+  /**
+   * UI가 활성화되어 있는지 여부
+   */
+  hasUI?: boolean;
+}
