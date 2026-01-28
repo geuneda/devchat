@@ -236,3 +236,37 @@ Rcjnt","type":"message","role":"assistant","content":[{"type":"text","text":"## 
     - `path`: 저장 파일 경로
 
 ---
+## ✓ Iteration 7 - US-017: CLI 명령어 전체 점검
+*2026-01-28T07:02:55.418Z (91s)*
+
+**Status:** Completed
+
+**Notes:**
+me`, `--port`: 설정값 변경","+    - `--list`, `--themes`, `--reset`, `--path`: 조회/관리","+  - **rooms 명령어** (`src/cli/rooms.ts`):","+    - 기본 실행: 저장된 방 목록 표시","+    - `delete <roomId>`: 방 삭제","+    - `info <roomId>`: 방 상세 정보","+    - `path`: 저장 파일 경로","+","+---"]}],"userModified":false,"replaceAll":false}}
+{"type":"assistant","message":{"model":"claude-opus-4-5-20251101","id":"msg_01X3nm5W24yV7nhZ16PndjbX","type":"message","role":"assistant","content":[{"type":"text","text":"progress.md가 업데이트되었습니다.\n\n
+
+---
+
+## 2026-01-28 - US-004
+
+- 구현한 내용: Settings 화면 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-004 기능은 기존에 완전히 구현되어 있었음
+  - **Settings 화면** (`src/ui/menu.ts:823-1107`):
+    - 메인 메뉴에서 Settings 선택 시 `showSettingsMenu()` 호출 (103-105줄)
+    - 닉네임 입력: `nickInput` (854-866줄)
+    - 토글 키 입력: `toggleInput` (877-889줄)
+    - 테마 선택: `themeList` - blessed list 컴포넌트 (900-920줄)
+    - 포트 입력: `portInput` (937-949줄)
+  - **필드 이동**:
+    - Tab/Shift+Tab: `registerKey(screen, 'tab', focusNext)` (1080-1081줄)
+    - 위/아래 화살표: `registerKey(screen, 'down/up', ...)` (1048-1078줄)
+    - 테마 리스트 포커스 시 특별 처리 - 리스트 내 이동 vs 다음 필드 이동
+  - **저장 로직** (`src/ui/menu.ts:1083-1095`):
+    - Save 버튼 press 시 `setConfig()` 호출로 각 설정 저장
+    - `rebuildMainMenu(screen)` 으로 메인 메뉴 복귀
+  - **Esc 처리** (`src/ui/menu.ts:1101-1103`):
+    - `registerKey(screen, 'escape', ...)` 로 메인 메뉴 복귀
+
+---

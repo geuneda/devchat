@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T07:02:55.386Z",
-  "currentIteration": 6,
+  "updatedAt": "2026-01-28T07:04:01.308Z",
+  "currentIteration": 7,
   "maxIterations": 0,
-  "tasksCompleted": 6,
+  "tasksCompleted": 7,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -113,8 +113,8 @@
       {
         "id": "US-017",
         "title": "CLI 명령어 전체 점검",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-018",
@@ -184,6 +184,16 @@
       "durationMs": 61483,
       "startedAt": "2026-01-28T05:07:11.408Z",
       "endedAt": "2026-01-28T05:08:12.891Z"
+    },
+    {
+      "iteration": 7,
+      "status": "completed",
+      "taskId": "US-017",
+      "taskTitle": "CLI 명령어 전체 점검",
+      "taskCompleted": true,
+      "durationMs": 90922,
+      "startedAt": "2026-01-28T07:01:24.463Z",
+      "endedAt": "2026-01-28T07:02:55.385Z"
     }
   ],
   "skippedTaskIds": [],
