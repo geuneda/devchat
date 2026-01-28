@@ -48,10 +48,11 @@
         "Esc로 메인 메뉴로 돌아감"
       ],
       "priority": 1,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-001"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-004",
@@ -312,6 +313,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T05:04:29.060Z"
+    "updatedAt": "2026-01-28T05:05:18.642Z"
   }
 }

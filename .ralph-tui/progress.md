@@ -77,6 +77,19 @@ after each iteration and included in agent prompts for context.
 
 ---
 
+## 2026-01-28 - US-003
+
+- 구현한 내용: Join Room 화면 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-003 기능은 이미 US-001과 함께 구현되어 있었음
+  - `showJoinMenu()`: 서버 주소와 닉네임 입력 폼 (642-818줄)
+  - 서버 주소 파싱: `address.split(':')` 후 host/port 분리 (797-799줄)
+  - `connectToServer({ host, port, nick })` 형태로 호출 (804-805줄)
+  - Tab/화살표로 필드 이동, Enter로 연결, Esc로 취소
+
+---
+
 ## ✓ Iteration 1 - US-001: 메인 메뉴 UI 키보드 네비게이션 수정
 *2026-01-28T05:03:01.287Z (176s)*
 
@@ -84,5 +97,14 @@ after each iteration and included in agent prompts for context.
 
 **Notes:**
 :"## 요약\n\nUS-001 (메인 메뉴 UI 키보드 네비게이션 수정) 작업을 완료했습니다.\n\n**수정 내용:**\n1. `screen.unkey()` 호출 시 두 번째 인자(listener) 누락 문제 해결 - 키 핸들러 추적 방식 변경\n2. `ListElement.selected` 속성 타입 에러 해결 - 타입 캐스팅 적용\n3. `connectToServer()` 파라미터 형식 수정 - address 문자열을 host/port로 파싱\n\n**완료 조건 충족:**\n- devchat 실행 시 메인 메뉴 표시됨\n- 위/아래 방향키로 메뉴 항목 이동 가능 (`keys: true`, `vi: true`)\n- 현재 선택 항목 시각적 구분 (`style.selected`)\n- Enter 키로 선택 실행 (`menuList.on('select', ...)`)\n- q 또는 Ctrl+C로 종료 (`registerKey(screen, ['q', 'C-c'], ...)`)\n\n
+
+---
+## ✓ Iteration 2 - US-002: Host Room 화면 구현 및 수정
+*2026-01-28T05:04:29.112Z (87s)*
+
+**Status:** Completed
+
+**Notes:**
+--|------|\n| 메인 메뉴에서 Host Room 선택 시 호스트 설정 화면으로 이동 | ✅ | `showHostMenu()` 208-219줄 |\n| 방 이름, 포트, 닉네임 입력 가능 | ✅ | `showNewRoomForm()` 437-637줄 |\n| 저장된 방이 있으면 목록으로 먼저 표시 | ✅ | `showSavedRoomsMenu()` 224-332줄 |\n| 새로운 방 만들기 옵션 선택 가능 | ✅ | 257줄 - \"+ 새로운 방 만들기\" 항목 |\n| Esc로 메인 메뉴로 돌아감 | ✅ | 각 화면의 escape 키 핸들러 |\n\n**추가 수정사항:**\n- `src/plugins/ui.ts`의 타입 에러 수정:\n  - `InputOptions.censor` 타입을 `string`에서 `boolean`으로 변경\n  - `ProgressBarElement` style에서 불필요한 `border` 속성 제거\n\n타입체크와 빌드 모두 성공했습니다.\n\n
 
 ---

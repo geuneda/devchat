@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T05:04:29.062Z",
-  "currentIteration": 1,
+  "updatedAt": "2026-01-28T05:05:18.645Z",
+  "currentIteration": 2,
   "maxIterations": 0,
-  "tasksCompleted": 1,
+  "tasksCompleted": 2,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -23,8 +23,8 @@
       {
         "id": "US-002",
         "title": "Host Room 화면 구현 및 수정",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-003",
@@ -134,6 +134,16 @@
       "durationMs": 175906,
       "startedAt": "2026-01-28T05:00:05.345Z",
       "endedAt": "2026-01-28T05:03:01.251Z"
+    },
+    {
+      "iteration": 2,
+      "status": "completed",
+      "taskId": "US-002",
+      "taskTitle": "Host Room 화면 구현 및 수정",
+      "taskCompleted": true,
+      "durationMs": 86768,
+      "startedAt": "2026-01-28T05:03:02.292Z",
+      "endedAt": "2026-01-28T05:04:29.060Z"
     }
   ],
   "skippedTaskIds": [],
