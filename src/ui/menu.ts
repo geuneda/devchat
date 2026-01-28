@@ -879,6 +879,8 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     height: 1,
     value: config.nick,
     inputOnFocus: true,
+    keys: true,
+    mouse: true,
     style: {
       fg: 'yellow',
       bg: 'black',
@@ -902,6 +904,8 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     height: 1,
     value: config.toggleKey,
     inputOnFocus: true,
+    keys: true,
+    mouse: true,
     style: {
       fg: 'magenta',
       bg: 'black',
@@ -962,6 +966,8 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     height: 1,
     value: String(config.port),
     inputOnFocus: true,
+    keys: true,
+    mouse: true,
     style: {
       fg: 'blue',
       bg: 'black',
@@ -984,6 +990,8 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     height: 3,
     content: '{center}Save{/center}',
     tags: true,
+    mouse: true,
+    keys: true,
     border: {
       type: 'line',
     },
@@ -1004,6 +1012,8 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     height: 3,
     content: '{center}Cancel{/center}',
     tags: true,
+    mouse: true,
+    keys: true,
     border: {
       type: 'line',
     },
@@ -1064,41 +1074,91 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
   // Helper to get themeList selected index
   const getThemeListSelected = (): number => (themeList as unknown as { selected: number }).selected;
 
-  // 위/아래 화살표 키 핸들링
-  registerKey(screen, 'down', () => {
-    if (themeListFocused) {
-      // 테마 리스트 내에서 아래로 이동
-      const currentSelect = getThemeListSelected();
-      if (currentSelect < themes.length - 1) {
-        themeList.select(currentSelect + 1);
-        screen.render();
-      } else {
-        // 마지막 항목이면 다음 필드로
-        focusNext();
-      }
-    } else {
-      focusNext();
+  const setFocus = (idx: number) => {
+    themeListFocused = false;
+    focusIndex = idx;
+    focusableElements[focusIndex].focus();
+    if (focusableElements[focusIndex] === themeList) {
+      themeListFocused = true;
     }
+    screen.render();
+  };
+
+  // 입력 필드 키 핸들러
+  nickInput.key(['tab', 'down'], () => {
+    nickInput.cancel();
+    setFocus(1); // toggleInput
   });
 
-  registerKey(screen, 'up', () => {
-    if (themeListFocused) {
-      // 테마 리스트 내에서 위로 이동
-      const currentSelect = getThemeListSelected();
-      if (currentSelect > 0) {
-        themeList.select(currentSelect - 1);
-        screen.render();
-      } else {
-        // 첫 번째 항목이면 이전 필드로
-        focusPrev();
-      }
-    } else {
-      focusPrev();
-    }
+  toggleInput.key(['tab', 'down'], () => {
+    toggleInput.cancel();
+    setFocus(2); // themeList
+  });
+  toggleInput.key(['S-tab', 'up'], () => {
+    toggleInput.cancel();
+    setFocus(0); // nickInput
   });
 
-  registerKey(screen, 'tab', focusNext);
-  registerKey(screen, 'S-tab', focusPrev);
+  portInput.key(['tab', 'down'], () => {
+    portInput.cancel();
+    setFocus(4); // saveBtn
+  });
+  portInput.key(['S-tab', 'up'], () => {
+    portInput.cancel();
+    setFocus(2); // themeList
+  });
+
+  // 테마 리스트 키 핸들러
+  themeList.key(['down'], () => {
+    const currentSelect = getThemeListSelected();
+    if (currentSelect < themes.length - 1) {
+      themeList.select(currentSelect + 1);
+      screen.render();
+    } else {
+      setFocus(3); // portInput
+    }
+  });
+  themeList.key(['up'], () => {
+    const currentSelect = getThemeListSelected();
+    if (currentSelect > 0) {
+      themeList.select(currentSelect - 1);
+      screen.render();
+    } else {
+      setFocus(1); // toggleInput
+    }
+  });
+  themeList.key(['tab'], () => {
+    setFocus(3); // portInput
+  });
+  themeList.key(['S-tab'], () => {
+    setFocus(1); // toggleInput
+  });
+
+  // 버튼 키 핸들러
+  saveBtn.key(['tab', 'down', 'right'], () => {
+    setFocus(5); // cancelBtn
+  });
+  saveBtn.key(['S-tab', 'up'], () => {
+    setFocus(3); // portInput
+  });
+  saveBtn.key(['left'], () => {
+    setFocus(5); // cancelBtn
+  });
+
+  cancelBtn.key(['tab', 'down'], () => {
+    setFocus(0); // nickInput (순환)
+  });
+  cancelBtn.key(['S-tab', 'up'], () => {
+    setFocus(4); // saveBtn
+  });
+  cancelBtn.key(['left', 'right'], () => {
+    setFocus(4); // saveBtn
+  });
+
+  // 전역 Escape
+  registerKey(screen, 'escape', () => {
+    rebuildMainMenu(screen);
+  });
 
   saveBtn.on('press', () => {
     const nick = nickInput.getValue();
