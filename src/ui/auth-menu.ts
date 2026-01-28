@@ -276,10 +276,44 @@ export async function showAuthMenu(): Promise<AuthMenuResult> {
     const focusOrder = [emailInput, passwordInput, loginBtn, registerBtn, skipBtn];
     let focusIdx = 0;
 
-    screen.key(['tab'], () => {
-      focusIdx = (focusIdx + 1) % focusOrder.length;
+    const moveFocus = (direction: number) => {
+      focusIdx = (focusIdx + direction + focusOrder.length) % focusOrder.length;
       focusOrder[focusIdx].focus();
       screen.render();
+    };
+
+    screen.key(['tab', 'down'], () => {
+      moveFocus(1);
+    });
+
+    screen.key(['S-tab', 'up'], () => {
+      moveFocus(-1);
+    });
+
+    screen.key(['left'], () => {
+      // Login -> Register 또는 Register -> Login
+      if (focusIdx === 2) {
+        focusIdx = 3;
+        focusOrder[focusIdx].focus();
+        screen.render();
+      } else if (focusIdx === 3) {
+        focusIdx = 2;
+        focusOrder[focusIdx].focus();
+        screen.render();
+      }
+    });
+
+    screen.key(['right'], () => {
+      // Login -> Register 또는 Register -> Login
+      if (focusIdx === 2) {
+        focusIdx = 3;
+        focusOrder[focusIdx].focus();
+        screen.render();
+      } else if (focusIdx === 3) {
+        focusIdx = 2;
+        focusOrder[focusIdx].focus();
+        screen.render();
+      }
     });
 
     emailInput.focus();
