@@ -29,6 +29,7 @@ export async function createChatUI(options: ChatUIOptions): Promise<void> {
   const pluginManager = options.pluginManager || new PluginManager();
   if (!options.pluginManager) {
     await pluginManager.loadBuiltinPlugins();
+    await pluginManager.loadExternalPlugins();
   }
 
   // Create screen

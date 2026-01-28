@@ -30,6 +30,7 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
   // 플러그인 로드
   await pluginManager.loadBuiltinPlugins();
+  await pluginManager.loadExternalPlugins();
 
   // 현재 방 ID (새 방이면 null, 복원된 방이면 기존 ID)
   let currentRoomId: string | null = resumeRoomId || null;

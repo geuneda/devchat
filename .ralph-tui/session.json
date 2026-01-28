@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T07:07:29.165Z",
-  "currentIteration": 10,
+  "updatedAt": "2026-01-28T07:10:29.154Z",
+  "currentIteration": 11,
   "maxIterations": 0,
-  "tasksCompleted": 10,
+  "tasksCompleted": 11,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -71,8 +71,8 @@
       {
         "id": "US-010",
         "title": "내장 채팅 명령어 구현",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       },
       {
         "id": "US-011",
@@ -224,6 +224,16 @@
       "durationMs": 50903,
       "startedAt": "2026-01-28T07:05:35.009Z",
       "endedAt": "2026-01-28T07:06:25.912Z"
+    },
+    {
+      "iteration": 11,
+      "status": "completed",
+      "taskId": "US-010",
+      "taskTitle": "내장 채팅 명령어 구현",
+      "taskCompleted": true,
+      "durationMs": 62208,
+      "startedAt": "2026-01-28T07:06:26.955Z",
+      "endedAt": "2026-01-28T07:07:29.163Z"
     }
   ],
   "skippedTaskIds": [],

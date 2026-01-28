@@ -189,10 +189,11 @@
         "플러그인 명령어가 채팅에서 사용 가능"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-007"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-012",
@@ -321,6 +322,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:07:29.164Z"
+    "updatedAt": "2026-01-28T07:10:29.153Z"
   }
 }

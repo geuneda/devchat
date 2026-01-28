@@ -1,4 +1,4 @@
-import { Plugin, PluginContext, PluginCommand, PluginWithState } from '../types';
+import { Plugin, PluginContext, PluginWithState } from '../types';
 import { PluginLoader } from './loader';
 import { createPlugin } from './api';
 
@@ -25,7 +25,7 @@ const dicePlugin = createPlugin({
         ctx.broadcast(`🎲 ${ctx.user.nick} rolled [${results.join(', ')}] = ${total} (${count}d${sides})`);
       }
     },
-    '/flip': (args, ctx) => {
+    '/flip': (_args, ctx) => {
       const result = Math.random() < 0.5 ? 'Heads' : 'Tails';
       ctx.broadcast(`🪙 ${ctx.user.nick} flipped a coin: ${result}!`);
     },
@@ -38,7 +38,7 @@ const utilPlugin = createPlugin({
   description: 'Utility commands',
   version: '1.0.0',
   commands: {
-    '/users': (args, ctx) => {
+    '/users': (_args, ctx) => {
       const users = ctx.getUsers();
       const list = users.map((u) => `${u.isHost ? '★' : '•'} ${u.nick}`).join('\n');
       ctx.broadcast(`Users in room:\n${list}`);
@@ -47,13 +47,13 @@ const utilPlugin = createPlugin({
       const action = args.join(' ') || 'does something';
       ctx.broadcast(`* ${ctx.user.nick} ${action}`);
     },
-    '/shrug': (args, ctx) => {
+    '/shrug': (_args, ctx) => {
       ctx.broadcast(`${ctx.user.nick}: ¯\\_(ツ)_/¯`);
     },
-    '/tableflip': (args, ctx) => {
+    '/tableflip': (_args, ctx) => {
       ctx.broadcast(`${ctx.user.nick}: (╯°□°)╯︵ ┻━┻`);
     },
-    '/unflip': (args, ctx) => {
+    '/unflip': (_args, ctx) => {
       ctx.broadcast(`${ctx.user.nick}: ┬─┬ノ( º _ ºノ)`);
     },
   },
@@ -65,7 +65,7 @@ const helpPlugin = createPlugin({
   description: 'Help commands',
   version: '1.0.0',
   commands: {
-    '/help': (args, ctx) => {
+    '/help': (_args, ctx) => {
       ctx.broadcast(`
 Available commands:
   /roll [sides] [count] - Roll dice
@@ -388,7 +388,10 @@ export class PluginManager {
 
   async loadExternalPlugins(): Promise<void> {
     const external = await this.loader.loadAllPlugins();
-    this.plugins.push(...external);
+    for (const plugin of external) {
+      this.plugins.push(plugin);
+      // onLoad 콜백은 컨텍스트가 필요하므로 나중에 호출됨
+    }
   }
 
   getPlugins(): Plugin[] {
@@ -414,11 +417,48 @@ export class PluginManager {
     return false;
   }
 
-  registerPlugin(plugin: Plugin): void {
+  registerPlugin(plugin: Plugin, ctx?: PluginContext): void {
     this.plugins.push(plugin);
-    if (plugin.onLoad) {
-      // onLoad will be called when context is available
+    if (plugin.onLoad && ctx) {
+      try {
+        plugin.onLoad(ctx);
+      } catch (error) {
+        console.error(`Error in plugin ${plugin.name} onLoad:`, error);
+      }
     }
+  }
+
+  /**
+   * 모든 플러그인의 onLoad 콜백을 호출합니다.
+   * 플러그인 컨텍스트가 준비된 후 호출해야 합니다.
+   */
+  initializePlugins(ctx: PluginContext): void {
+    for (const plugin of this.plugins) {
+      if (plugin.onLoad) {
+        try {
+          plugin.onLoad(ctx);
+        } catch (error) {
+          console.error(`Error in plugin ${plugin.name} onLoad:`, error);
+        }
+      }
+    }
+  }
+
+  /**
+   * 모든 플러그인을 언로드합니다.
+   * 플러그인의 onUnload 콜백을 호출합니다.
+   */
+  unloadAllPlugins(): void {
+    for (const plugin of this.plugins) {
+      if (plugin.onUnload) {
+        try {
+          plugin.onUnload();
+        } catch (error) {
+          console.error(`Error in plugin ${plugin.name} onUnload:`, error);
+        }
+      }
+    }
+    this.plugins = [];
   }
 
   /**
