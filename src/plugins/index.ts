@@ -196,7 +196,8 @@ function createTextRpgPlugin(): PluginWithState {
     commands: {
       '/rpg': (args, ctx) => {
         const sub = args[0];
-        const player = getPlayer(ctx.user.id, ctx.user.nick);
+        const playerId = ctx.getPlayerId();
+        const player = getPlayer(playerId, ctx.user.nick);
 
         if (!sub) {
           ctx.broadcast(`
@@ -216,7 +217,7 @@ function createTextRpgPlugin(): PluginWithState {
 
         switch (sub) {
           case 'start':
-            dungeonLevels.set(ctx.user.id, 1);
+            dungeonLevels.set(playerId, 1);
             ctx.broadcast(`⚔️ ${ctx.user.nick} 모험 시작! HP:${player.hp} ATK:${player.attack} DEF:${player.defense} 💰${player.gold}`);
             break;
 
@@ -225,7 +226,7 @@ function createTextRpgPlugin(): PluginWithState {
             break;
 
           case 'hunt': {
-            if (battles.has(ctx.user.id)) {
+            if (battles.has(playerId)) {
               ctx.broadcast(`❌ 이미 전투 중!`);
               return;
             }
@@ -233,15 +234,15 @@ function createTextRpgPlugin(): PluginWithState {
               ctx.broadcast(`💀 쓰러져 있음. /rpg heal`);
               return;
             }
-            const lvl = dungeonLevels.get(ctx.user.id) || 1;
+            const lvl = dungeonLevels.get(playerId) || 1;
             const mon = spawnMonster(lvl);
-            battles.set(ctx.user.id, mon);
+            battles.set(playerId, mon);
             ctx.broadcast(`⚔️ ${mon.name} 등장! HP:${mon.hp} ATK:${mon.attack} - /rpg attack or /rpg run`);
             break;
           }
 
           case 'attack': {
-            const mon = battles.get(ctx.user.id);
+            const mon = battles.get(playerId);
             if (!mon) {
               ctx.broadcast(`❌ 전투 중 아님`);
               return;
@@ -253,7 +254,7 @@ function createTextRpgPlugin(): PluginWithState {
             if (mon.hp <= 0) {
               player.gold += mon.goldDrop;
               player.exp += mon.expDrop;
-              battles.delete(ctx.user.id);
+              battles.delete(playerId);
               msg += `🎉 처치! +${mon.goldDrop}💰 +${mon.expDrop}exp`;
               if (checkLevelUp(player)) msg += ` 🎊 레벨업! Lv.${player.level}`;
             } else {
@@ -263,7 +264,7 @@ function createTextRpgPlugin(): PluginWithState {
               if (player.hp <= 0) {
                 player.hp = 0;
                 player.gold = Math.floor(player.gold * 0.5);
-                battles.delete(ctx.user.id);
+                battles.delete(playerId);
                 msg += ` 💀 사망...`;
               }
             }
@@ -272,13 +273,13 @@ function createTextRpgPlugin(): PluginWithState {
           }
 
           case 'run': {
-            const mon = battles.get(ctx.user.id);
+            const mon = battles.get(playerId);
             if (!mon) {
               ctx.broadcast(`❌ 전투 중 아님`);
               return;
             }
             if (Math.random() < 0.7) {
-              battles.delete(ctx.user.id);
+              battles.delete(playerId);
               ctx.broadcast(`🏃 도망 성공!`);
             } else {
               const dmg = calculateDamage(mon.attack, player.defense);
@@ -287,14 +288,14 @@ function createTextRpgPlugin(): PluginWithState {
               if (player.hp <= 0) {
                 player.hp = 0;
                 player.gold = Math.floor(player.gold * 0.5);
-                battles.delete(ctx.user.id);
+                battles.delete(playerId);
               }
             }
             break;
           }
 
           case 'heal': {
-            if (battles.has(ctx.user.id)) {
+            if (battles.has(playerId)) {
               const idx = player.inventory.indexOf('potion');
               if (idx === -1) {
                 ctx.broadcast(`❌ 포션 없음!`);
@@ -339,16 +340,16 @@ function createTextRpgPlugin(): PluginWithState {
           }
 
           case 'dungeon': {
-            let dungeonLevel = dungeonLevels.get(ctx.user.id) || 1;
+            let dungeonLevel = dungeonLevels.get(playerId) || 1;
             const subArg = args[1];
 
             if (subArg === 'up' && dungeonLevel < 6) {
               dungeonLevel++;
-              dungeonLevels.set(ctx.user.id, dungeonLevel);
+              dungeonLevels.set(playerId, dungeonLevel);
               ctx.broadcast(`🏰 던전 ${dungeonLevel}층으로 내려갑니다. 몬스터가 더 강해집니다!`);
             } else if (subArg === 'down' && dungeonLevel > 1) {
               dungeonLevel--;
-              dungeonLevels.set(ctx.user.id, dungeonLevel);
+              dungeonLevels.set(playerId, dungeonLevel);
               ctx.broadcast(`🏰 던전 ${dungeonLevel}층으로 올라갑니다.`);
             } else {
               ctx.broadcast(`🏰 현재 던전 ${dungeonLevel}층 - /rpg dungeon up (내려가기) /rpg dungeon down (올라가기)`);

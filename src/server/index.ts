@@ -2,9 +2,10 @@ import { WebSocketServer, WebSocket } from 'ws';
 import { nanoid } from 'nanoid';
 import { RoomManager } from '../core/room';
 import { ChatManager } from '../core/chat';
-import { saveRoom, loadRoom, updateLastOpened } from '../core/roomHistory';
+import { saveRoom, loadRoom, updateLastOpened, savePlayerState, loadPlayerState, getAllPlayerStates } from '../core/roomHistory';
 import { getServerErrorMessage } from '../core/errors';
-import { WSMessage, ChatPayload, JoinPayload, User, UserListPayload, SavedRoom } from '../types';
+import { verifyTokenWithSupabase, isSupabaseConfigured } from '../core/auth';
+import { WSMessage, ChatPayload, JoinPayload, User, UserListPayload, SavedRoom, AuthSuccessPayload } from '../types';
 import { createChatUI } from '../ui';
 import { PluginManager } from '../plugins';
 
@@ -19,6 +20,7 @@ interface ServerOptions {
 interface ClientConnection {
   ws: WebSocket;
   user: User;
+  uid?: string;
 }
 
 export async function startServer(options: ServerOptions): Promise<void> {
@@ -56,11 +58,23 @@ export async function startServer(options: ServerOptions): Promise<void> {
   const room = roomManager.createRoom(roomName, hostNick);
   const hostUser = room.host;
 
+  // UID별 플레이어 상태 수집
+  const collectPlayerStates = (): Record<string, Record<string, unknown>> => {
+    const playerStates: Record<string, Record<string, unknown>> = {};
+    clients.forEach((client) => {
+      if (client.uid) {
+        playerStates[client.uid] = pluginManager.getAllPluginStates();
+      }
+    });
+    return playerStates;
+  };
+
   // 방 저장 함수
   const saveCurrentRoom = () => {
     const messages = chatManager.getMessages();
     const pluginStates = pluginManager.getAllPluginStates();
-    const saved = saveRoom(currentRoomId, roomName, hostNick, port, messages, pluginStates);
+    const playerStates = currentRoomId ? getAllPlayerStates(currentRoomId) : {};
+    const saved = saveRoom(currentRoomId, roomName, hostNick, port, messages, pluginStates, playerStates);
     currentRoomId = saved.id;
     return saved;
   };
@@ -99,8 +113,9 @@ export async function startServer(options: ServerOptions): Promise<void> {
   // Handle new connections
   wss.on('connection', (ws) => {
     let userId: string | null = null;
+    let userUid: string | null = null;
 
-    ws.on('message', (data) => {
+    ws.on('message', async (data) => {
       try {
         const message: WSMessage = JSON.parse(data.toString());
 
@@ -109,14 +124,41 @@ export async function startServer(options: ServerOptions): Promise<void> {
             const payload = message.payload as JoinPayload;
             let nick = payload.nick;
 
+            // 토큰 검증 (Supabase가 설정된 경우만)
+            if (isSupabaseConfigured() && payload.token) {
+              const decoded = await verifyTokenWithSupabase(payload.token);
+              if (decoded) {
+                userUid = decoded.sub;
+              }
+            }
+
             // Check if nick is taken
             if (roomManager.isNickTaken(nick)) {
               nick = `${nick}_${nanoid(4)}`;
             }
 
-            const user = roomManager.addUser(nick);
+            const user = roomManager.addUser(nick, userUid ?? undefined);
             userId = user.id;
-            clients.set(userId, { ws, user });
+            clients.set(userId, { ws, user, uid: userUid || undefined });
+
+            // UID 기반 플레이어 상태 로드
+            let gameState: Record<string, unknown> | null = null;
+            if (userUid && currentRoomId) {
+              gameState = loadPlayerState(currentRoomId, userUid);
+              if (gameState) {
+                pluginManager.restoreAllPluginStates(gameState);
+              }
+            }
+
+            // 인증된 경우 auth_success 응답
+            if (userUid) {
+              const authSuccessMsg: WSMessage = {
+                type: 'auth_success',
+                payload: { user, gameState } as AuthSuccessPayload,
+                timestamp: Date.now(),
+              };
+              ws.send(JSON.stringify(authSuccessMsg));
+            }
 
             // Send welcome message
             const welcomeMsg: WSMessage = {
@@ -146,12 +188,12 @@ export async function startServer(options: ServerOptions): Promise<void> {
             const user = roomManager.getUserById(userId);
             if (!user) return;
 
-            const chatMsg = chatManager.addMessage(user.nick, payload.message);
-            
+            const chatMsg = chatManager.addMessage(user.nick, payload.message, 'chat', userUid ?? undefined);
+
             // Broadcast to all including sender
             const chatMsgWs: WSMessage = {
               type: 'chat',
-              payload: { message: chatMsg.content, sender: user.nick },
+              payload: { message: chatMsg.content, sender: user.nick, senderUid: userUid },
               timestamp: chatMsg.timestamp,
             };
             broadcast(chatMsgWs);
@@ -171,9 +213,15 @@ export async function startServer(options: ServerOptions): Promise<void> {
 
     ws.on('close', () => {
       if (userId) {
+        // 플레이어 상태 저장 (UID가 있는 경우)
+        if (userUid && currentRoomId) {
+          const pluginStates = pluginManager.getAllPluginStates();
+          savePlayerState(currentRoomId, userUid, pluginStates);
+        }
+
         const user = roomManager.removeUser(userId);
         clients.delete(userId);
-        
+
         if (user) {
           const leaveNotice = chatManager.addSystemMessage(`${user.nick} left the room`);
           broadcast({

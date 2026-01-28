@@ -5,11 +5,17 @@ export class ChatManager {
   private messages: ChatMessage[] = [];
   private maxMessages = 1000;
 
-  addMessage(sender: string, content: string, type: ChatMessage['type'] = 'chat'): ChatMessage {
+  addMessage(
+    sender: string,
+    content: string,
+    type: ChatMessage['type'] = 'chat',
+    senderUid?: string
+  ): ChatMessage {
     const message: ChatMessage = {
       id: nanoid(),
       type,
       sender,
+      senderUid,
       content,
       timestamp: Date.now(),
     };
@@ -28,8 +34,8 @@ export class ChatManager {
     return this.addMessage('System', content, 'system');
   }
 
-  addPluginMessage(pluginName: string, content: string): ChatMessage {
-    return this.addMessage(pluginName, content, 'plugin');
+  addPluginMessage(pluginName: string, content: string, senderUid?: string): ChatMessage {
+    return this.addMessage(pluginName, content, 'plugin', senderUid);
   }
 
   getMessages(limit?: number): ChatMessage[] {

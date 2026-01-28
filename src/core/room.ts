@@ -25,7 +25,7 @@ export class RoomManager {
     return this.room;
   }
 
-  addUser(nick: string): User {
+  addUser(nick: string, uid?: string): User {
     if (!this.room) {
       throw new Error('No room exists');
     }
@@ -34,6 +34,7 @@ export class RoomManager {
       id: nanoid(),
       nick,
       isHost: false,
+      uid,
     };
 
     this.room.users.push(user);

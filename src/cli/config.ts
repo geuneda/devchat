@@ -8,6 +8,8 @@ export const configCommand = new Command('config')
   .option('--toggle-key <key>', 'Set toggle key for stealth mode')
   .option('--theme <theme>', 'Set stealth mode theme')
   .option('--port <port>', 'Set default port')
+  .option('--supabase-url <url>', 'Set Supabase project URL')
+  .option('--supabase-key <key>', 'Set Supabase anon key')
   .option('--list', 'List all configuration')
   .option('--themes', 'List available themes')
   .option('--reset', 'Reset to default configuration')
@@ -72,6 +74,18 @@ export const configCommand = new Command('config')
       changed = true;
     }
 
+    if (options.supabaseUrl) {
+      setConfig('supabaseUrl', options.supabaseUrl);
+      console.log(`✓ Supabase URL set`);
+      changed = true;
+    }
+
+    if (options.supabaseKey) {
+      setConfig('supabaseAnonKey', options.supabaseKey);
+      console.log(`✓ Supabase anon key set`);
+      changed = true;
+    }
+
     // If no changes made or --list, show current config
     if (!changed || options.list) {
       const config = getConfig();
@@ -81,5 +95,6 @@ export const configCommand = new Command('config')
       console.log(`  theme:      ${config.theme}`);
       console.log(`  port:       ${config.port}`);
       console.log(`  pluginsDir: ${config.pluginsDir}`);
+      console.log(`  supabase:   ${config.supabaseUrl ? 'configured' : 'not configured'}`);
     }
   });

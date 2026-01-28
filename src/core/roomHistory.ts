@@ -24,7 +24,8 @@ export function saveRoom(
   hostNick: string,
   port: number,
   messages: ChatMessage[],
-  pluginStates: Record<string, unknown>
+  pluginStates: Record<string, unknown>,
+  playerStates?: Record<string, Record<string, unknown>>
 ): SavedRoom {
   const rooms = store.get('rooms');
   const now = Date.now();
@@ -41,6 +42,7 @@ export function saveRoom(
     lastOpenedAt: now,
     messages,
     pluginStates,
+    playerStates: playerStates || existingRoom?.playerStates || {},
   };
 
   rooms[id] = savedRoom;
@@ -136,4 +138,61 @@ export function formatDate(timestamp: number): string {
  */
 export function getRoomHistoryPath(): string {
   return store.path;
+}
+
+/**
+ * 특정 UID의 플레이어 상태를 저장합니다.
+ */
+export function savePlayerState(
+  roomId: string,
+  uid: string,
+  pluginStates: Record<string, unknown>
+): void {
+  const rooms = store.get('rooms');
+  const room = rooms[roomId];
+
+  if (!room) {
+    return;
+  }
+
+  if (!room.playerStates) {
+    room.playerStates = {};
+  }
+
+  room.playerStates[uid] = pluginStates;
+  rooms[roomId] = room;
+  store.set('rooms', rooms);
+}
+
+/**
+ * 특정 UID의 플레이어 상태를 로드합니다.
+ */
+export function loadPlayerState(
+  roomId: string,
+  uid: string
+): Record<string, unknown> | null {
+  const rooms = store.get('rooms');
+  const room = rooms[roomId];
+
+  if (!room || !room.playerStates) {
+    return null;
+  }
+
+  return room.playerStates[uid] || null;
+}
+
+/**
+ * 방의 모든 플레이어 상태를 반환합니다.
+ */
+export function getAllPlayerStates(
+  roomId: string
+): Record<string, Record<string, unknown>> {
+  const rooms = store.get('rooms');
+  const room = rooms[roomId];
+
+  if (!room || !room.playerStates) {
+    return {};
+  }
+
+  return room.playerStates;
 }

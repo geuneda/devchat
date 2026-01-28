@@ -3,8 +3,10 @@ import { nanoid } from 'nanoid';
 import { RoomManager } from '../core/room';
 import { ChatManager } from '../core/chat';
 import { getConnectionErrorMessage, getDisconnectMessage } from '../core/errors';
-import { WSMessage, ChatPayload, JoinPayload, User, UserListPayload } from '../types';
+import { getAuthManager, isSupabaseConfigured } from '../core/auth';
+import { WSMessage, ChatPayload, JoinPayload, User, UserListPayload, AuthSuccessPayload } from '../types';
 import { createChatUI } from '../ui';
+import { PluginManager } from '../plugins';
 
 interface ClientOptions {
   host: string;
@@ -17,12 +19,27 @@ export async function connectToServer(options: ClientOptions): Promise<void> {
 
   const roomManager = new RoomManager();
   const chatManager = new ChatManager();
+  const pluginManager = new PluginManager();
+
+  await pluginManager.loadBuiltinPlugins();
+  await pluginManager.loadExternalPlugins();
+
+  // 인증 토큰 가져오기
+  let authToken: string | null = null;
+  let userUid: string | null = null;
+  if (isSupabaseConfigured()) {
+    const authManager = getAuthManager();
+    await authManager.initialize();
+    authToken = authManager.getToken();
+    userUid = authManager.getUid();
+  }
 
   // Create a temporary user (will be updated when server confirms)
   let currentUser: User = {
     id: nanoid(),
     nick,
     isHost: false,
+    uid: userUid || undefined,
   };
 
   return new Promise((resolve, reject) => {
@@ -31,11 +48,16 @@ export async function connectToServer(options: ClientOptions): Promise<void> {
 
     ws.on('open', () => {
       console.log('Connected to server!');
-      
-      // Send join message
+
+      // Send join message with token
+      const joinPayload: JoinPayload = { nick };
+      if (authToken) {
+        joinPayload.token = authToken;
+      }
+
       const joinMsg: WSMessage = {
         type: 'join',
-        payload: { nick } as JoinPayload,
+        payload: joinPayload,
         timestamp: Date.now(),
       };
       ws.send(JSON.stringify(joinMsg));
@@ -46,10 +68,25 @@ export async function connectToServer(options: ClientOptions): Promise<void> {
         const message: WSMessage = JSON.parse(data.toString());
 
         switch (message.type) {
+          case 'auth_success': {
+            const payload = message.payload as AuthSuccessPayload;
+            currentUser = payload.user;
+            if (payload.gameState) {
+              pluginManager.restoreAllPluginStates(payload.gameState);
+            }
+            break;
+          }
+
+          case 'auth_error': {
+            const payload = message.payload as { message: string };
+            console.error('Authentication error:', payload.message);
+            break;
+          }
+
           case 'system': {
             const payload = message.payload as ChatPayload;
             chatManager.addSystemMessage(payload.message);
-            
+
             // Check if this is welcome message to extract our nick
             if (payload.message.includes('You are:')) {
               const match = payload.message.match(/You are: (.+)$/);
@@ -101,6 +138,7 @@ export async function connectToServer(options: ClientOptions): Promise<void> {
             user: currentUser,
             chatManager,
             roomManager,
+            pluginManager,
             broadcast: (msg: string) => {
               const chatMsg: WSMessage = {
                 type: 'chat',

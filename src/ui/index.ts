@@ -290,8 +290,9 @@ export async function createChatUI(options: ChatUIOptions): Promise<void> {
             onPluginMessage(pluginManager.getCommandPlugin(cmd)?.name || 'Plugin', msg);
             addChatMessage(`[Plugin] ${msg}`);
           },
-          sendToUser: () => {}, // Not implemented for simplicity
+          sendToUser: () => {},
           getUsers: () => roomManager.getUsers(),
+          getPlayerId: () => user.uid || user.id,
         });
 
         if (!handled) {

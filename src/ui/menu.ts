@@ -2,6 +2,8 @@ import blessed from 'blessed';
 import { getConfig, setConfig, getConfigPath } from '../core/config';
 import { getThemeNames } from '../core/stealth';
 import { getSavedRooms, deleteRoom, formatDate, hasSavedRooms } from '../core/roomHistory';
+import { isSupabaseConfigured, getAuthManager } from '../core/auth';
+import { showAuthMenu } from './auth-menu';
 import { SavedRoomSummary } from '../types';
 
 interface MenuOption {
@@ -47,6 +49,14 @@ function registerKey(screen: blessed.Widgets.Screen, keys: string | string[], ha
  * Shows when user runs `devchat` without arguments
  */
 export async function showMainMenu(): Promise<void> {
+  // Supabase가 설정된 경우 인증 체크
+  if (isSupabaseConfigured()) {
+    const authResult = await showAuthMenu();
+    if (!authResult.success) {
+      process.exit(0);
+    }
+  }
+
   const screen = blessed.screen({
     smartCSR: true,
     title: 'DevChat',
@@ -145,17 +155,27 @@ function rebuildMainMenu(screen: blessed.Widgets.Screen): void {
     label: ' Menu ',
   });
 
+  // 인증 상태 확인
+  const authManager = getAuthManager();
+  const authUser = authManager.getCurrentUser();
+  const authStatus = authUser
+    ? `{green-fg}${authUser.email}{/green-fg}`
+    : isSupabaseConfigured()
+    ? '{yellow-fg}로그인 안 됨{/yellow-fg}'
+    : '{gray-fg}설정 안 됨{/gray-fg}';
+
   // Current config info
   const infoBox = blessed.box({
     top: 6 + menuItems.length + 3,
     left: 'center',
     width: '80%',
-    height: 6,
+    height: 7,
     content: `{gray-fg}현재 설정:{/gray-fg}
   닉네임: {yellow-fg}${config.nick}{/yellow-fg}
   테마: {green-fg}${config.theme}{/green-fg}
   토글 키: {magenta-fg}${config.toggleKey}{/magenta-fg}
-  기본 포트: {blue-fg}${config.port}{/blue-fg}`,
+  기본 포트: {blue-fg}${config.port}{/blue-fg}
+  인증: ${authStatus}`,
     tags: true,
     border: {
       type: 'line',

@@ -65,11 +65,11 @@ function createPlayer(name: string): Player {
   };
 }
 
-function getPlayer(userId: string, name: string): Player {
-  if (!gameState.players.has(userId)) {
-    gameState.players.set(userId, createPlayer(name));
+function getPlayer(playerId: string, name: string): Player {
+  if (!gameState.players.has(playerId)) {
+    gameState.players.set(playerId, createPlayer(name));
   }
-  return gameState.players.get(userId)!;
+  return gameState.players.get(playerId)!;
 }
 
 function spawnMonster(dungeonLevel: number): Monster {
@@ -139,8 +139,9 @@ const textRpgPlugin: Plugin = {
     },
 
     '/rpg-start': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
-      gameState.dungeonLevel.set(ctx.user.id, 1);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
+      gameState.dungeonLevel.set(playerId, 1);
       ctx.broadcast(`
 ⚔️ ${ctx.user.nick}님이 모험을 시작했습니다!
 
@@ -155,7 +156,8 @@ ${ctx.user.nick}의 초기 스탯:
     },
 
     '/rpg-status': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
       const expNeeded = player.level * 50;
       
       ctx.broadcast(`
@@ -172,9 +174,10 @@ ${ctx.user.nick}의 초기 스탯:
     },
 
     '/rpg-hunt': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
-      
-      if (gameState.currentBattle.has(ctx.user.id)) {
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
+
+      if (gameState.currentBattle.has(playerId)) {
         ctx.broadcast(`❌ 이미 전투 중입니다! /rpg attack 또는 /rpg run`);
         return;
       }
@@ -184,9 +187,9 @@ ${ctx.user.nick}의 초기 스탯:
         return;
       }
 
-      const dungeonLevel = gameState.dungeonLevel.get(ctx.user.id) || 1;
+      const dungeonLevel = gameState.dungeonLevel.get(playerId) || 1;
       const monster = spawnMonster(dungeonLevel);
-      gameState.currentBattle.set(ctx.user.id, monster);
+      gameState.currentBattle.set(playerId, monster);
 
       ctx.broadcast(`
 ⚔️ ${monster.name}이(가) 나타났다!
@@ -202,8 +205,9 @@ ${monster.name}
     },
 
     '/rpg-attack': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
-      const monster = gameState.currentBattle.get(ctx.user.id);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
+      const monster = gameState.currentBattle.get(playerId);
 
       if (!monster) {
         ctx.broadcast(`❌ 전투 중이 아닙니다. /rpg hunt 로 몬스터를 찾으세요.`);
@@ -220,7 +224,7 @@ ${monster.name}
         // Monster defeated
         player.gold += monster.goldDrop;
         player.exp += monster.expDrop;
-        gameState.currentBattle.delete(ctx.user.id);
+        gameState.currentBattle.delete(playerId);
 
         result += `
 🎉 ${monster.name}을(를) 처치했습니다!
@@ -246,7 +250,7 @@ ${monster.name}
           result += `\n\n💀 ${player.name}이(가) 쓰러졌습니다...`;
           player.hp = 0;
           player.gold = Math.floor(player.gold * 0.5);
-          gameState.currentBattle.delete(ctx.user.id);
+          gameState.currentBattle.delete(playerId);
           result += `\n💰 골드의 절반을 잃었습니다...`;
         }
       }
@@ -255,8 +259,9 @@ ${monster.name}
     },
 
     '/rpg-run': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
-      const monster = gameState.currentBattle.get(ctx.user.id);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
+      const monster = gameState.currentBattle.get(playerId);
 
       if (!monster) {
         ctx.broadcast(`❌ 전투 중이 아닙니다.`);
@@ -265,7 +270,7 @@ ${monster.name}
 
       // 70% chance to escape
       if (Math.random() < 0.7) {
-        gameState.currentBattle.delete(ctx.user.id);
+        gameState.currentBattle.delete(playerId);
         ctx.broadcast(`🏃 ${player.name}이(가) 도망쳤습니다!`);
       } else {
         const damage = calculateDamage(monster, player);
@@ -275,20 +280,21 @@ ${monster.name}
 🗡️ ${monster.name}의 공격! ${damage} 데미지!
 ❤️ HP: ${player.hp}/${player.maxHp}
 `);
-        
+
         if (player.hp <= 0) {
           player.hp = 0;
           player.gold = Math.floor(player.gold * 0.5);
-          gameState.currentBattle.delete(ctx.user.id);
+          gameState.currentBattle.delete(playerId);
           ctx.broadcast(`💀 ${player.name}이(가) 쓰러졌습니다...`);
         }
       }
     },
 
     '/rpg-heal': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
 
-      if (gameState.currentBattle.has(ctx.user.id)) {
+      if (gameState.currentBattle.has(playerId)) {
         // Use potion in battle
         const potionIndex = player.inventory.indexOf('potion');
         if (potionIndex === -1) {
@@ -308,7 +314,8 @@ ${monster.name}
     },
 
     '/rpg-shop': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
       
       let shopText = `
 🏪 상점 (보유 골드: ${player.gold}💰)
@@ -323,7 +330,8 @@ ${monster.name}
     },
 
     '/rpg-buy': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
       const itemKey = args[0]?.toLowerCase();
 
       if (!itemKey || !ITEMS[itemKey]) {
@@ -359,19 +367,20 @@ ${monster.name}
     },
 
     '/rpg-dungeon': (args, ctx) => {
-      const player = getPlayer(ctx.user.id, ctx.user.nick);
-      let dungeonLevel = gameState.dungeonLevel.get(ctx.user.id) || 1;
+      const playerId = ctx.getPlayerId();
+      const player = getPlayer(playerId, ctx.user.nick);
+      let dungeonLevel = gameState.dungeonLevel.get(playerId) || 1;
 
       if (args[0] === 'up' && dungeonLevel < 6) {
         dungeonLevel++;
-        gameState.dungeonLevel.set(ctx.user.id, dungeonLevel);
+        gameState.dungeonLevel.set(playerId, dungeonLevel);
         ctx.broadcast(`
 🏰 던전 ${dungeonLevel}층으로 내려갑니다...
 ⚠️ 몬스터가 더 강해집니다!
 `);
       } else if (args[0] === 'down' && dungeonLevel > 1) {
         dungeonLevel--;
-        gameState.dungeonLevel.set(ctx.user.id, dungeonLevel);
+        gameState.dungeonLevel.set(playerId, dungeonLevel);
         ctx.broadcast(`🏰 던전 ${dungeonLevel}층으로 올라갑니다.`);
       } else {
         ctx.broadcast(`

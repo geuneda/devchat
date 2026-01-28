@@ -13,6 +13,8 @@ export function getConfig(): DevChatConfig {
     theme: config.get('theme'),
     port: config.get('port'),
     pluginsDir: config.get('pluginsDir'),
+    supabaseUrl: config.get('supabaseUrl') || process.env.SUPABASE_URL,
+    supabaseAnonKey: config.get('supabaseAnonKey') || process.env.SUPABASE_ANON_KEY,
   };
 }
 

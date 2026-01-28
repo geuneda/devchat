@@ -3,6 +3,7 @@ export interface ChatMessage {
   id: string;
   type: 'chat' | 'system' | 'plugin';
   sender: string;
+  senderUid?: string;
   content: string;
   timestamp: number;
 }
@@ -11,6 +12,7 @@ export interface User {
   id: string;
   nick: string;
   isHost: boolean;
+  uid?: string;
 }
 
 export interface Room {
@@ -28,7 +30,10 @@ export type WSMessageType =
   | 'system'
   | 'plugin'
   | 'user-list'
-  | 'error';
+  | 'error'
+  | 'auth_verify'
+  | 'auth_success'
+  | 'auth_error';
 
 export interface WSMessage {
   type: WSMessageType;
@@ -39,6 +44,16 @@ export interface WSMessage {
 export interface JoinPayload {
   nick: string;
   roomName?: string;
+  token?: string;
+}
+
+export interface AuthSuccessPayload {
+  user: User;
+  gameState?: Record<string, unknown>;
+}
+
+export interface AuthErrorPayload {
+  message: string;
 }
 
 export interface ChatPayload {
@@ -57,6 +72,7 @@ export interface PluginContext {
   broadcast: (message: string) => void;
   sendToUser: (userId: string, message: string) => void;
   getUsers: () => User[];
+  getPlayerId: () => string;
 }
 
 export interface PluginCommand {
@@ -79,6 +95,8 @@ export interface DevChatConfig {
   theme: string;
   port: number;
   pluginsDir: string;
+  supabaseUrl?: string;
+  supabaseAnonKey?: string;
 }
 
 export const DEFAULT_CONFIG: DevChatConfig = {
@@ -87,6 +105,8 @@ export const DEFAULT_CONFIG: DevChatConfig = {
   theme: 'npm-build',
   port: 8080,
   pluginsDir: './plugins',
+  supabaseUrl: undefined,
+  supabaseAnonKey: undefined,
 };
 
 // Stealth theme types
@@ -202,6 +222,8 @@ export interface SavedRoom {
   messages: ChatMessage[];
   /** 플러그인 상태 (플러그인 이름 -> 상태 데이터) */
   pluginStates: Record<string, unknown>;
+  /** UID별 플레이어 상태 */
+  playerStates?: Record<string, Record<string, unknown>>;
 }
 
 /**
