@@ -310,35 +310,38 @@ export async function showAuthMenu(): Promise<AuthMenuResult> {
 
     passwordInput.on('submit', handleLogin);
 
-    // 버튼들 키 핸들러
+    // 버튼 키 핸들러
+    loginBtn.key(['tab', 'down'], () => {
+      setFocus(3); // registerBtn
+    });
+    loginBtn.key(['S-tab', 'up'], () => {
+      setFocus(1); // password
+    });
+    loginBtn.key(['left', 'right'], () => {
+      setFocus(3); // registerBtn
+    });
+
+    registerBtn.key(['tab', 'down'], () => {
+      setFocus(4); // skipBtn
+    });
+    registerBtn.key(['S-tab', 'up'], () => {
+      setFocus(1); // password
+    });
+    registerBtn.key(['left', 'right'], () => {
+      setFocus(2); // loginBtn
+    });
+
+    skipBtn.key(['tab', 'down'], () => {
+      setFocus(0); // email
+    });
+    skipBtn.key(['S-tab', 'up'], () => {
+      setFocus(3); // registerBtn
+    });
+
+    // 전역 키
     screen.key(['escape', 'q'], () => {
       screen.destroy();
       resolve({ success: false });
-    });
-
-    screen.key(['tab', 'down'], () => {
-      // 입력 필드가 아닐 때만 동작
-      if (focusIdx >= 2) {
-        moveFocus(1);
-      }
-    });
-
-    screen.key(['S-tab', 'up'], () => {
-      if (focusIdx >= 2) {
-        moveFocus(-1);
-      } else if (focusIdx === 0) {
-        // email에서 위로 가면 skip으로
-        setFocus(4);
-      }
-    });
-
-    screen.key(['left', 'right'], () => {
-      // Login <-> Register 전환
-      if (focusIdx === 2) {
-        setFocus(3);
-      } else if (focusIdx === 3) {
-        setFocus(2);
-      }
     });
 
     emailInput.focus();
