@@ -245,10 +245,11 @@
         "devchat rooms 명령어로 저장된 방 목록 확인"
       ],
       "priority": 2,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-007"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-015",
@@ -322,6 +323,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:10:29.153Z"
+    "updatedAt": "2026-01-28T07:11:45.208Z"
   }
 }
