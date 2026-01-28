@@ -52,7 +52,7 @@ export interface ProgressOptions extends BoxOptions {
 export interface InputOptions extends BoxOptions {
   value?: string;
   secret?: boolean;
-  censor?: string;
+  censor?: boolean;
 }
 
 export interface TextDisplayOptions extends BoxOptions {
@@ -203,7 +203,6 @@ export function createGameScreen(options: GameScreenOptions = {}): PluginUIConte
         fg: opts.style?.fg || 'white',
         bg: opts.style?.bg || 'black',
         bar: opts.style?.bar || { fg: 'green' },
-        border: opts.style?.border,
       },
     });
     return bar;

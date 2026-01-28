@@ -43,6 +43,11 @@ after each iteration and included in agent prompts for context.
   await connectToServer({ host, port, nick });
   ```
 
+### blessed 플러그인 UI 타입 문제
+
+- `ProgressBarElement`의 style에는 `border` 속성이 없음 - 제거 필요
+- `TextboxElement`의 `censor` 속성은 `boolean` 타입 (`string` 아님)
+
 ---
 
 ## 2026-01-28 - US-001
@@ -58,3 +63,26 @@ after each iteration and included in agent prompts for context.
 
 ---
 
+## 2026-01-28 - US-002
+
+- 구현한 내용: Host Room 화면 검증 및 타입 에러 수정
+- 변경된 파일:
+  - `src/plugins/ui.ts` - 타입 에러 수정 (censor: boolean, ProgressBar style.border 제거)
+- **배운 점:**
+  - US-002 기능은 이미 US-001과 함께 구현되어 있었음
+  - `showHostMenu()`: 저장된 방 있으면 목록, 없으면 새 방 생성 폼
+  - `showSavedRoomsMenu()`: 저장된 방 목록 + "새로운 방 만들기" 옵션
+  - `showNewRoomForm()`: 포트, 방 이름, 닉네임 입력 폼
+  - 모든 화면에서 Esc로 이전 화면/메인 메뉴 복귀 가능
+
+---
+
+## ✓ Iteration 1 - US-001: 메인 메뉴 UI 키보드 네비게이션 수정
+*2026-01-28T05:03:01.287Z (176s)*
+
+**Status:** Completed
+
+**Notes:**
+:"## 요약\n\nUS-001 (메인 메뉴 UI 키보드 네비게이션 수정) 작업을 완료했습니다.\n\n**수정 내용:**\n1. `screen.unkey()` 호출 시 두 번째 인자(listener) 누락 문제 해결 - 키 핸들러 추적 방식 변경\n2. `ListElement.selected` 속성 타입 에러 해결 - 타입 캐스팅 적용\n3. `connectToServer()` 파라미터 형식 수정 - address 문자열을 host/port로 파싱\n\n**완료 조건 충족:**\n- devchat 실행 시 메인 메뉴 표시됨\n- 위/아래 방향키로 메뉴 항목 이동 가능 (`keys: true`, `vi: true`)\n- 현재 선택 항목 시각적 구분 (`style.selected`)\n- Enter 키로 선택 실행 (`menuList.on('select', ...)`)\n- q 또는 Ctrl+C로 종료 (`registerKey(screen, ['q', 'C-c'], ...)`)\n\n
+
+---
