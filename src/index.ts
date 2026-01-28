@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander';
-import { hostCommand, joinCommand, configCommand, roomsCommand } from './cli';
+import { hostCommand, joinCommand, configCommand, roomsCommand, inviteCommand } from './cli';
 
 const program = new Command();
 
@@ -19,5 +19,6 @@ program.addCommand(hostCommand);
 program.addCommand(joinCommand);
 program.addCommand(configCommand);
 program.addCommand(roomsCommand);
+program.addCommand(inviteCommand);
 
 program.parse();

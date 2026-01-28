@@ -1,4 +1,4 @@
-# DevChat 🕵️
+# DevChat
 
 **개발자를 위한 스텔스 CLI 채팅 도구**
 
@@ -13,6 +13,8 @@
 - **위장 테마**: npm build, git log, docker logs, compile, pytest 등
 - **플러그인 시스템**: 커스텀 명령어 추가 가능
 - **내장 텍스트 RPG**: 채팅하면서 미니 RPG 즐기기!
+- **Supabase 인증**: 로그인/회원가입으로 게임 상태 영구 저장
+- **초대 코드**: 한 줄 명령어로 친구 초대
 
 ## 설치
 
@@ -69,9 +71,22 @@ devchat join localhost:8080 --nick "테스터"
 devchat host --port 8080 --name "우리팀방" --nick "김개발"
 ```
 
-서버가 시작되면 IP 주소가 표시됩니다. 이 주소를 팀원에게 공유하세요.
+### 친구 초대 (가장 쉬운 방법)
 
-### 방 참여
+호스트가 초대 코드를 생성하면 친구는 한 줄 명령어로 접속할 수 있습니다:
+
+```bash
+# 호스트: 초대 코드 생성
+devchat invite --port 8080 --name "우리팀방"
+
+# 출력된 초대 코드를 친구에게 공유
+# 친구: 초대 코드로 접속
+devchat join --invite <초대코드> --nick "친구닉네임"
+```
+
+초대 코드에는 서버 주소, 포트, 인증 설정이 모두 포함됩니다.
+
+### 방 참여 (수동)
 
 ```bash
 devchat join 192.168.1.100:8080 --nick "박코딩"
@@ -94,6 +109,35 @@ devchat config --themes
 
 # 현재 설정 보기
 devchat config --list
+```
+
+## 인증 설정 (선택사항)
+
+Supabase 인증을 설정하면 게임 상태가 영구 저장됩니다. 재접속해도 RPG 캐릭터 레벨, 골드 등이 유지됩니다.
+
+### 호스트가 Supabase 설정하기
+
+1. https://supabase.com 에서 무료 프로젝트 생성
+2. Project Settings > API에서 URL과 anon key 복사
+3. DevChat에 설정:
+
+```bash
+devchat config --supabase-url "https://your-project.supabase.co"
+devchat config --supabase-key "your-anon-key"
+```
+
+### 친구 초대 시 자동 공유
+
+호스트가 `devchat invite`로 초대 코드를 생성하면 인증 설정이 자동으로 포함됩니다.
+친구는 초대 코드로 접속하면 별도 설정 없이 바로 사용 가능합니다.
+
+### 수동 설정 (초대 코드 없이)
+
+호스트에게 Supabase URL과 Key를 받아서 직접 설정:
+
+```bash
+devchat config --supabase-url "호스트의-supabase-url"
+devchat config --supabase-key "호스트의-anon-key"
 ```
 
 ## 스텔스 모드
