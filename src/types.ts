@@ -162,3 +162,57 @@ export interface PluginWithUI extends Plugin {
    */
   hasUI?: boolean;
 }
+
+/**
+ * Plugin with state persistence support
+ * 플러그인 상태를 저장/복원할 수 있도록 확장된 인터페이스
+ */
+export interface PluginWithState extends Plugin {
+  /**
+   * 현재 플러그인 상태를 반환
+   * 방 저장 시 호출됩니다.
+   */
+  getState?: () => unknown;
+  
+  /**
+   * 저장된 상태를 복원
+   * 방 복원 시 호출됩니다.
+   */
+  setState?: (state: unknown) => void;
+}
+
+/**
+ * 저장된 방 데이터
+ * 호스트가 만든 채팅방을 로컬에 저장할 때 사용
+ */
+export interface SavedRoom {
+  /** 고유 식별자 */
+  id: string;
+  /** 방 이름 */
+  name: string;
+  /** 호스트 닉네임 */
+  hostNick: string;
+  /** 사용한 포트 */
+  port: number;
+  /** 최초 생성 시각 */
+  createdAt: number;
+  /** 마지막으로 열었던 시각 */
+  lastOpenedAt: number;
+  /** 저장된 채팅 메시지 */
+  messages: ChatMessage[];
+  /** 플러그인 상태 (플러그인 이름 -> 상태 데이터) */
+  pluginStates: Record<string, unknown>;
+}
+
+/**
+ * 저장된 방 목록 요약 정보 (UI 표시용)
+ */
+export interface SavedRoomSummary {
+  id: string;
+  name: string;
+  hostNick: string;
+  port: number;
+  createdAt: number;
+  lastOpenedAt: number;
+  messageCount: number;
+}

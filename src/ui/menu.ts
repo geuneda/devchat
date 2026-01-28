@@ -1,6 +1,8 @@
 import blessed from 'blessed';
 import { getConfig, setConfig, getConfigPath } from '../core/config';
 import { getThemeNames } from '../core/stealth';
+import { getSavedRooms, deleteRoom, formatDate, hasSavedRooms } from '../core/roomHistory';
+import { SavedRoomSummary } from '../types';
 
 interface MenuOption {
   label: string;
@@ -158,9 +160,244 @@ export async function showMainMenu(): Promise<void> {
 }
 
 /**
- * Host room menu
+ * Host room menu - 저장된 방이 있으면 목록을 먼저 보여줌
  */
 function showHostMenu(screen: blessed.Widgets.Screen): void {
+  const savedRooms = getSavedRooms();
+
+  // 저장된 방이 없으면 바로 새 방 생성 화면으로
+  if (savedRooms.length === 0) {
+    showNewRoomForm(screen);
+    return;
+  }
+
+  // 저장된 방 목록 화면 표시
+  showSavedRoomsMenu(screen, savedRooms);
+}
+
+/**
+ * 저장된 방 목록 메뉴
+ */
+function showSavedRoomsMenu(screen: blessed.Widgets.Screen, savedRooms: SavedRoomSummary[]): void {
+  // Clear screen content
+  screen.children.forEach((child) => child.destroy());
+
+  const listBox = blessed.box({
+    top: 'center',
+    left: 'center',
+    width: '75%',
+    height: Math.min(savedRooms.length + 10, 20),
+    border: {
+      type: 'line',
+    },
+    style: {
+      border: { fg: 'green' },
+    },
+    label: ' Host Room ',
+  });
+
+  const titleText = blessed.text({
+    parent: listBox,
+    top: 1,
+    left: 2,
+    content: '{bold}저장된 방 목록{/bold} {gray-fg}(이전에 호스트한 방){/gray-fg}',
+    tags: true,
+  });
+
+  // 목록 아이템 생성: 저장된 방들 + "새로운 방 만들기"
+  const listItems: string[] = savedRooms.map((room) => {
+    const date = formatDate(room.lastOpenedAt);
+    const msgCount = room.messageCount > 0 ? ` [${room.messageCount}개 메시지]` : '';
+    return `  ${room.name} (${date})${msgCount}`;
+  });
+  listItems.push('  {green-fg}+ 새로운 방 만들기{/green-fg}');
+
+  const roomList = blessed.list({
+    parent: listBox,
+    top: 3,
+    left: 1,
+    right: 1,
+    height: Math.min(savedRooms.length + 3, 12),
+    items: listItems,
+    keys: true,
+    vi: true,
+    mouse: true,
+    tags: true,
+    style: {
+      selected: {
+        bg: 'green',
+        fg: 'black',
+        bold: true,
+      },
+      item: {
+        fg: 'white',
+      },
+    },
+  });
+
+  const helpText = blessed.text({
+    parent: listBox,
+    bottom: 0,
+    left: 2,
+    content: '{gray-fg}[↑↓] 이동  [Enter] 선택  [d] 삭제  [Esc] 취소{/gray-fg}',
+    tags: true,
+  });
+
+  screen.append(listBox);
+
+  // 방 선택 핸들러
+  roomList.on('select', async (_item, index) => {
+    if (index === savedRooms.length) {
+      // "새로운 방 만들기" 선택
+      showNewRoomForm(screen);
+    } else {
+      // 저장된 방 선택 - 바로 시작
+      const selectedRoom = savedRooms[index];
+      screen.destroy();
+
+      console.log(`📂 저장된 방을 복원합니다: ${selectedRoom.name}`);
+
+      const { startServer } = await import('../server');
+      await startServer({
+        port: selectedRoom.port,
+        roomName: selectedRoom.name,
+        hostNick: selectedRoom.hostNick,
+        resumeRoomId: selectedRoom.id,
+      });
+    }
+  });
+
+  // 삭제 키 핸들러
+  screen.key(['d', 'D'], () => {
+    const selectedIndex = roomList.selected as number;
+    if (selectedIndex < savedRooms.length) {
+      const selectedRoom = savedRooms[selectedIndex];
+      showDeleteConfirmation(screen, selectedRoom, savedRooms);
+    }
+  });
+
+  screen.key(['escape'], () => {
+    screen.destroy();
+    showMainMenu();
+  });
+
+  roomList.focus();
+  screen.render();
+}
+
+/**
+ * 방 삭제 확인 다이얼로그
+ */
+function showDeleteConfirmation(
+  screen: blessed.Widgets.Screen,
+  room: SavedRoomSummary,
+  savedRooms: SavedRoomSummary[]
+): void {
+  const confirmBox = blessed.box({
+    top: 'center',
+    left: 'center',
+    width: 50,
+    height: 9,
+    border: {
+      type: 'line',
+    },
+    style: {
+      border: { fg: 'red' },
+      bg: 'black',
+    },
+    label: ' 삭제 확인 ',
+  });
+
+  const message = blessed.text({
+    parent: confirmBox,
+    top: 1,
+    left: 2,
+    right: 2,
+    content: `{bold}${room.name}{/bold}\n\n이 방을 삭제하시겠습니까?\n채팅 기록과 게임 진행 상태가 삭제됩니다.`,
+    tags: true,
+  });
+
+  const yesBtn = blessed.button({
+    parent: confirmBox,
+    bottom: 1,
+    left: 5,
+    width: 12,
+    height: 1,
+    content: '{center}삭제{/center}',
+    tags: true,
+    style: {
+      fg: 'white',
+      bg: 'red',
+      focus: {
+        bg: 'yellow',
+        fg: 'black',
+      },
+    },
+  });
+
+  const noBtn = blessed.button({
+    parent: confirmBox,
+    bottom: 1,
+    right: 5,
+    width: 12,
+    height: 1,
+    content: '{center}취소{/center}',
+    tags: true,
+    style: {
+      fg: 'white',
+      bg: 'blue',
+      focus: {
+        bg: 'cyan',
+        fg: 'black',
+      },
+    },
+  });
+
+  screen.append(confirmBox);
+
+  yesBtn.on('press', () => {
+    deleteRoom(room.id);
+    confirmBox.destroy();
+    
+    // 목록 새로고침
+    const updatedRooms = getSavedRooms();
+    if (updatedRooms.length === 0) {
+      showNewRoomForm(screen);
+    } else {
+      showSavedRoomsMenu(screen, updatedRooms);
+    }
+  });
+
+  noBtn.on('press', () => {
+    confirmBox.destroy();
+    screen.render();
+  });
+
+  screen.key(['y', 'Y'], () => {
+    deleteRoom(room.id);
+    confirmBox.destroy();
+    
+    const updatedRooms = getSavedRooms();
+    if (updatedRooms.length === 0) {
+      showNewRoomForm(screen);
+    } else {
+      showSavedRoomsMenu(screen, updatedRooms);
+    }
+  });
+
+  screen.key(['n', 'N'], () => {
+    confirmBox.destroy();
+    screen.render();
+  });
+
+  yesBtn.focus();
+  screen.render();
+}
+
+/**
+ * 새 방 생성 폼
+ */
+function showNewRoomForm(screen: blessed.Widgets.Screen, prefilledRoom?: SavedRoomSummary): void {
   const config = getConfig();
 
   // Clear screen content
@@ -177,7 +414,7 @@ function showHostMenu(screen: blessed.Widgets.Screen): void {
     style: {
       border: { fg: 'green' },
     },
-    label: ' Host Room ',
+    label: ' 새로운 방 만들기 ',
   });
 
   const portLabel = blessed.text({
@@ -194,7 +431,7 @@ function showHostMenu(screen: blessed.Widgets.Screen): void {
     left: 14,
     width: 20,
     height: 1,
-    value: String(config.port),
+    value: String(prefilledRoom?.port || config.port),
     inputOnFocus: true,
     style: {
       fg: 'yellow',
@@ -216,7 +453,7 @@ function showHostMenu(screen: blessed.Widgets.Screen): void {
     left: 14,
     width: 30,
     height: 1,
-    value: 'DevChat Room',
+    value: prefilledRoom?.name || 'DevChat Room',
     inputOnFocus: true,
     style: {
       fg: 'yellow',
@@ -238,7 +475,7 @@ function showHostMenu(screen: blessed.Widgets.Screen): void {
     left: 14,
     width: 20,
     height: 1,
-    value: config.nick,
+    value: prefilledRoom?.hostNick || config.nick,
     inputOnFocus: true,
     style: {
       fg: 'yellow',
@@ -339,17 +576,26 @@ function showHostMenu(screen: blessed.Widgets.Screen): void {
 
     // Import and start host
     const { startServer } = await import('../server');
-    await startServer({ port, roomName, nick });
+    await startServer({ port, roomName, hostNick: nick });
   });
 
   cancelBtn.on('press', () => {
     screen.destroy();
-    showMainMenu();
+    // 저장된 방이 있으면 목록으로, 없으면 메인 메뉴로
+    if (hasSavedRooms()) {
+      showHostMenu(screen);
+    } else {
+      showMainMenu();
+    }
   });
 
   screen.key(['escape'], () => {
     screen.destroy();
-    showMainMenu();
+    if (hasSavedRooms()) {
+      showMainMenu(); // 새 방 폼에서 ESC 누르면 메인 메뉴로
+    } else {
+      showMainMenu();
+    }
   });
 
   portInput.focus();

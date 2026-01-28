@@ -14,6 +14,8 @@ interface ChatUIOptions {
   roomManager: RoomManager;
   broadcast: (message: string) => void;
   onPluginMessage: (pluginName: string, message: string) => void;
+  /** 외부에서 전달받은 PluginManager (상태 공유용) */
+  pluginManager?: PluginManager;
 }
 
 export async function createChatUI(options: ChatUIOptions): Promise<void> {
@@ -23,9 +25,11 @@ export async function createChatUI(options: ChatUIOptions): Promise<void> {
   // Create stealth mode manager
   const stealthManager = new StealthModeManager(config.theme);
 
-  // Create plugin manager
-  const pluginManager = new PluginManager();
-  await pluginManager.loadBuiltinPlugins();
+  // Use provided plugin manager or create new one
+  const pluginManager = options.pluginManager || new PluginManager();
+  if (!options.pluginManager) {
+    await pluginManager.loadBuiltinPlugins();
+  }
 
   // Create screen
   const screen = blessed.screen({

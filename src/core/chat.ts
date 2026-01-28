@@ -43,6 +43,25 @@ export class ChatManager {
     this.messages = [];
   }
 
+  /**
+   * 저장된 메시지를 복원합니다.
+   * 방을 다시 열 때 사용됩니다.
+   */
+  setMessages(messages: ChatMessage[]): void {
+    this.messages = [...messages];
+    // Keep only recent messages if exceeds max
+    if (this.messages.length > this.maxMessages) {
+      this.messages = this.messages.slice(-this.maxMessages);
+    }
+  }
+
+  /**
+   * 현재 메시지 개수를 반환합니다.
+   */
+  getMessageCount(): number {
+    return this.messages.length;
+  }
+
   formatMessage(msg: ChatMessage): string {
     const time = new Date(msg.timestamp).toLocaleTimeString('ko-KR', {
       hour: '2-digit',

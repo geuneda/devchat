@@ -30,6 +30,37 @@ npm run build
 npm link
 ```
 
+## AI 에이전트용 빠른 시작
+
+> 이 섹션은 AI 코딩 에이전트(Claude, Cursor, Copilot 등)가 프로젝트를 자동으로 설치하고 실행할 수 있도록 작성되었습니다.
+
+### 원스텝 설치
+
+```bash
+git clone https://github.com/YOUR_USERNAME/devchat.git && cd devchat && npm install && npm run build && npm link
+```
+
+### 테스트 실행
+
+```bash
+# 터미널 1: 호스트 시작
+devchat host --port 8080 --name "테스트방"
+
+# 터미널 2: 참여
+devchat join localhost:8080 --nick "테스터"
+```
+
+### 주요 명령어
+
+| 명령어 | 설명 |
+|--------|------|
+| `npm run build` | 프로덕션 빌드 |
+| `npm run dev` | 개발 모드 (watch) |
+| `npm run typecheck` | 타입 체크 |
+| `npm test` | 테스트 실행 |
+
+자세한 개발 가이드는 [CLAUDE.md](./CLAUDE.md) 참조.
+
 ## 사용법
 
 ### 방 만들기 (호스트)

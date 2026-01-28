@@ -78,11 +78,35 @@ devchat
 
 ### 메뉴 항목
 
-- **Host Room**: 채팅방 생성 화면으로 이동 (포트, 방 이름, 닉네임 설정)
+- **Host Room**: 채팅방 생성 화면으로 이동 (저장된 방 목록 표시 또는 새 방 생성)
 - **Join Room**: 채팅방 참여 화면으로 이동 (서버 주소, 닉네임 설정)
 - **Settings**: 기본 설정 변경 (닉네임, 토글 키, 테마, 포트)
 - **Help**: 도움말 표시
 - **Exit**: 프로그램 종료
+
+### Host Room - 저장된 방 관리
+
+Host Room 선택 시 저장된 방이 있으면 목록이 먼저 표시됩니다:
+
+```
++------------------------------------------+
+|              Host Room                   |
++------------------------------------------+
+| 저장된 방:                               |
+|   > 우리팀방 (오늘 14:30) [15개 메시지]   |
+|     테스트방 (어제) [8개 메시지]          |
+|   ─────────────────────────────          |
+|   + 새로운 방 만들기                     |
++------------------------------------------+
+| [↑↓] 이동 [Enter] 선택 [d] 삭제 [Esc] 취소 |
++------------------------------------------+
+```
+
+| 키 | 동작 |
+|----|------|
+| `Enter` | 선택한 방 열기 (저장된 채팅/게임 상태 복원) |
+| `d` | 선택한 방 삭제 (확인 다이얼로그 표시) |
+| `Esc` | 메인 메뉴로 돌아가기 |
 
 ---
 
@@ -101,6 +125,7 @@ devchat host [옵션]
 | `-p, --port <port>` | 리스닝 포트 | 8080 |
 | `-n, --name <name>` | 방 이름 | "DevChat Room" |
 | `--nick <nickname>` | 닉네임 | 설정된 닉네임 |
+| `-r, --resume <roomId>` | 저장된 방 복원 | - |
 
 **예시:**
 ```bash
@@ -109,6 +134,38 @@ devchat host
 
 # 커스텀 설정
 devchat host --port 9000 --name "우리팀방" --nick "김개발"
+
+# 저장된 방 복원
+devchat host --resume abc123def456
+```
+
+> **참고**: 방 종료 시 (Ctrl+C) 채팅 내역과 게임 진행 상태가 자동 저장됩니다.
+
+### devchat rooms - 저장된 방 관리
+
+저장된 채팅방 목록을 조회하고 관리합니다.
+
+```bash
+devchat rooms [명령어]
+```
+
+| 명령어 | 설명 |
+|--------|------|
+| (없음) | 저장된 방 목록 보기 |
+| `delete <roomId>` | 저장된 방 삭제 |
+| `info <roomId>` | 방 상세 정보 보기 |
+| `path` | 저장 파일 경로 보기 |
+
+**예시:**
+```bash
+# 저장된 방 목록 보기
+devchat rooms
+
+# 방 상세 정보 보기
+devchat rooms info abc123def456
+
+# 방 삭제
+devchat rooms delete abc123def456
 ```
 
 ### devchat join - 채팅방 참여
@@ -218,6 +275,48 @@ devchat host --port 8080 --name "테스트방"
 devchat join localhost:8080 --nick "테스터"
 ```
 
+## 방 저장 및 복원 기능
+
+호스트가 만든 채팅방은 로컬에 자동 저장되어 나중에 다시 열 수 있습니다.
+
+### 자동 저장되는 데이터
+
+- **채팅 내역**: 모든 메시지 (최대 1000개)
+- **플러그인 상태**: 게임 진행 기록 (예: RPG 캐릭터 레벨, 골드 등)
+- **방 설정**: 방 이름, 포트, 호스트 닉네임
+
+### 저장 시점
+
+- 방 종료 시 (Ctrl+C) 자동 저장
+- 저장 위치: `~/.config/devchat/room-history.json`
+
+### 사용 방법
+
+**방법 1: 인터랙티브 메뉴**
+```bash
+devchat
+# Host Room 선택 → 저장된 방 목록에서 선택
+```
+
+**방법 2: CLI 명령어**
+```bash
+# 저장된 방 목록 확인
+devchat rooms
+
+# 저장된 방 복원
+devchat host --resume <roomId>
+```
+
+### 저장된 방 삭제
+
+**메뉴에서 삭제:**
+- Host Room → 방 선택 → `d` 키 → 확인
+
+**CLI에서 삭제:**
+```bash
+devchat rooms delete <roomId>
+```
+
 ## 스텔스 모드 사용법
 
 | 상태 | 화면 |
@@ -325,7 +424,15 @@ interface Plugin {
   onLoad?: (ctx: PluginContext) => void;    // 로드 시 콜백
   onUnload?: () => void;                     // 언로드 시 콜백
 }
+
+// 상태 저장을 지원하는 플러그인
+interface PluginWithState extends Plugin {
+  getState?: () => unknown;                  // 상태 저장 시 호출
+  setState?: (state: unknown) => void;       // 상태 복원 시 호출
+}
 ```
+
+> **참고**: `PluginWithState`를 구현하면 방 저장 시 플러그인의 게임 진행 상태가 함께 저장됩니다.
 
 ### PluginContext API
 
@@ -659,36 +766,38 @@ export default gamePlugin;
 ```
 devchat/
 ├── src/
-│   ├── cli/           # CLI 명령어 정의
-│   │   ├── host.ts    # host 명령어
-│   │   ├── join.ts    # join 명령어
-│   │   ├── config.ts  # config 명령어
-│   │   └── index.ts   # CLI 엔트리
-│   ├── client/        # WebSocket 클라이언트
+│   ├── cli/              # CLI 명령어 정의
+│   │   ├── host.ts       # host 명령어
+│   │   ├── join.ts       # join 명령어
+│   │   ├── config.ts     # config 명령어
+│   │   ├── rooms.ts      # rooms 명령어 (저장된 방 관리)
+│   │   └── index.ts      # CLI 엔트리
+│   ├── client/           # WebSocket 클라이언트
 │   │   └── index.ts
-│   ├── server/        # WebSocket 서버
+│   ├── server/           # WebSocket 서버
 │   │   └── index.ts
-│   ├── core/          # 핵심 로직
-│   │   ├── chat.ts    # 채팅 처리
-│   │   ├── config.ts  # 설정 관리
-│   │   ├── room.ts    # 방 관리
-│   │   └── stealth.ts # 스텔스 모드/테마
-│   ├── plugins/       # 플러그인 시스템
-│   │   ├── api.ts     # 플러그인 API
-│   │   ├── ui.ts      # 플러그인 UI API (게임 UI용)
-│   │   ├── loader.ts  # 플러그인 로더
+│   ├── core/             # 핵심 로직
+│   │   ├── chat.ts       # 채팅 처리
+│   │   ├── config.ts     # 설정 관리
+│   │   ├── room.ts       # 방 관리
+│   │   ├── roomHistory.ts # 방 저장/복원 관리
+│   │   └── stealth.ts    # 스텔스 모드/테마
+│   ├── plugins/          # 플러그인 시스템
+│   │   ├── api.ts        # 플러그인 API
+│   │   ├── ui.ts         # 플러그인 UI API (게임 UI용)
+│   │   ├── loader.ts     # 플러그인 로더
 │   │   └── index.ts
-│   ├── ui/            # blessed TUI
-│   │   ├── index.ts   # 채팅 UI
-│   │   └── menu.ts    # 인터랙티브 메뉴 UI
-│   ├── types.ts       # 타입 정의
-│   └── index.ts       # 메인 엔트리
-├── plugins/           # 플러그인 디렉토리
-│   ├── text-rpg/      # 내장 RPG 플러그인
+│   ├── ui/               # blessed TUI
+│   │   ├── index.ts      # 채팅 UI
+│   │   └── menu.ts       # 인터랙티브 메뉴 UI
+│   ├── types.ts          # 타입 정의
+│   └── index.ts          # 메인 엔트리
+├── plugins/              # 플러그인 디렉토리
+│   ├── text-rpg/         # 내장 RPG 플러그인
 │   │   └── index.ts
 │   └── game-ui-example/  # 게임 UI 예시 플러그인
 │       └── index.ts
-├── dist/              # 빌드 출력
+├── dist/                 # 빌드 출력
 ├── package.json
 ├── tsconfig.json
 └── README.md

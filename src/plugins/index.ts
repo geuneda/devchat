@@ -1,4 +1,4 @@
-import { Plugin, PluginContext, PluginCommand } from '../types';
+import { Plugin, PluginContext, PluginCommand, PluginWithState } from '../types';
 import { PluginLoader } from './loader';
 import { createPlugin } from './api';
 
@@ -85,7 +85,7 @@ Available commands:
 // Built-in Text RPG plugin
 const textRpgPlugin = createTextRpgPlugin();
 
-function createTextRpgPlugin(): Plugin {
+function createTextRpgPlugin(): PluginWithState {
   interface Player {
     name: string;
     hp: number;
@@ -189,7 +189,7 @@ function createTextRpgPlugin(): Plugin {
     return '█'.repeat(filled) + '░'.repeat(10 - filled);
   }
 
-  return createPlugin({
+  const plugin: PluginWithState = {
     name: 'text-rpg',
     description: 'A text-based RPG game',
     version: '1.0.0',
@@ -342,7 +342,35 @@ function createTextRpgPlugin(): Plugin {
         }
       },
     },
-  });
+    // 상태 저장 - 방 저장 시 호출됨
+    getState: () => {
+      return {
+        players: Object.fromEntries(players),
+        dungeonLevels: Object.fromEntries(dungeonLevels),
+        // battles는 저장하지 않음 (진행 중인 전투는 복원 안 함)
+      };
+    },
+    // 상태 복원 - 방 복원 시 호출됨
+    setState: (state: unknown) => {
+      const s = state as { players?: Record<string, Player>; dungeonLevels?: Record<string, number> };
+      if (s.players) {
+        players.clear();
+        for (const [key, value] of Object.entries(s.players)) {
+          players.set(key, value);
+        }
+      }
+      if (s.dungeonLevels) {
+        dungeonLevels.clear();
+        for (const [key, value] of Object.entries(s.dungeonLevels)) {
+          dungeonLevels.set(key, value);
+        }
+      }
+      // battles는 초기화 (진행 중이던 전투는 리셋)
+      battles.clear();
+    },
+  };
+
+  return plugin;
 }
 
 export class PluginManager {
@@ -390,6 +418,56 @@ export class PluginManager {
     this.plugins.push(plugin);
     if (plugin.onLoad) {
       // onLoad will be called when context is available
+    }
+  }
+
+  /**
+   * 특정 플러그인의 상태를 가져옵니다.
+   */
+  getPluginState(pluginName: string): unknown | null {
+    const plugin = this.plugins.find((p) => p.name === pluginName) as PluginWithState | undefined;
+    if (plugin && typeof plugin.getState === 'function') {
+      return plugin.getState();
+    }
+    return null;
+  }
+
+  /**
+   * 특정 플러그인의 상태를 설정합니다.
+   */
+  setPluginState(pluginName: string, state: unknown): boolean {
+    const plugin = this.plugins.find((p) => p.name === pluginName) as PluginWithState | undefined;
+    if (plugin && typeof plugin.setState === 'function') {
+      plugin.setState(state);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * 모든 플러그인의 상태를 가져옵니다.
+   * 상태 저장을 지원하는 플러그인만 포함됩니다.
+   */
+  getAllPluginStates(): Record<string, unknown> {
+    const states: Record<string, unknown> = {};
+    for (const plugin of this.plugins) {
+      const p = plugin as PluginWithState;
+      if (typeof p.getState === 'function') {
+        const state = p.getState();
+        if (state !== null && state !== undefined) {
+          states[plugin.name] = state;
+        }
+      }
+    }
+    return states;
+  }
+
+  /**
+   * 저장된 상태를 모든 플러그인에 복원합니다.
+   */
+  restoreAllPluginStates(states: Record<string, unknown>): void {
+    for (const [pluginName, state] of Object.entries(states)) {
+      this.setPluginState(pluginName, state);
     }
   }
 }
