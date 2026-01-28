@@ -95,6 +95,7 @@ export async function showAuthMenu(): Promise<AuthMenuResult> {
         focus: { bg: 'blue' },
       },
       inputOnFocus: true,
+      keys: true,
     });
 
     const passwordLabel = blessed.text({
@@ -117,6 +118,7 @@ export async function showAuthMenu(): Promise<AuthMenuResult> {
         focus: { bg: 'blue' },
       },
       inputOnFocus: true,
+      keys: true,
       censor: true,
     });
 
@@ -262,17 +264,6 @@ export async function showAuthMenu(): Promise<AuthMenuResult> {
     registerBtn.on('press', handleRegister);
     skipBtn.on('press', handleSkip);
 
-    emailInput.on('submit', () => {
-      passwordInput.focus();
-    });
-
-    passwordInput.on('submit', handleLogin);
-
-    screen.key(['escape', 'q'], () => {
-      screen.destroy();
-      resolve({ success: false });
-    });
-
     const focusOrder = [emailInput, passwordInput, loginBtn, registerBtn, skipBtn];
     let focusIdx = 0;
 
@@ -282,37 +273,71 @@ export async function showAuthMenu(): Promise<AuthMenuResult> {
       screen.render();
     };
 
+    const setFocus = (idx: number) => {
+      focusIdx = idx;
+      focusOrder[focusIdx].focus();
+      screen.render();
+    };
+
+    // 이메일 입력 필드 키 핸들러
+    emailInput.key(['tab', 'down'], () => {
+      emailInput.cancel();
+      setFocus(1); // password로 이동
+    });
+
+    emailInput.key(['enter'], () => {
+      emailInput.submit();
+    });
+
+    emailInput.on('submit', () => {
+      setFocus(1); // password로 이동
+    });
+
+    // 비밀번호 입력 필드 키 핸들러
+    passwordInput.key(['tab', 'down'], () => {
+      passwordInput.cancel();
+      setFocus(2); // loginBtn으로 이동
+    });
+
+    passwordInput.key(['S-tab', 'up'], () => {
+      passwordInput.cancel();
+      setFocus(0); // email로 이동
+    });
+
+    passwordInput.key(['enter'], () => {
+      passwordInput.submit();
+    });
+
+    passwordInput.on('submit', handleLogin);
+
+    // 버튼들 키 핸들러
+    screen.key(['escape', 'q'], () => {
+      screen.destroy();
+      resolve({ success: false });
+    });
+
     screen.key(['tab', 'down'], () => {
-      moveFocus(1);
-    });
-
-    screen.key(['S-tab', 'up'], () => {
-      moveFocus(-1);
-    });
-
-    screen.key(['left'], () => {
-      // Login -> Register 또는 Register -> Login
-      if (focusIdx === 2) {
-        focusIdx = 3;
-        focusOrder[focusIdx].focus();
-        screen.render();
-      } else if (focusIdx === 3) {
-        focusIdx = 2;
-        focusOrder[focusIdx].focus();
-        screen.render();
+      // 입력 필드가 아닐 때만 동작
+      if (focusIdx >= 2) {
+        moveFocus(1);
       }
     });
 
-    screen.key(['right'], () => {
-      // Login -> Register 또는 Register -> Login
+    screen.key(['S-tab', 'up'], () => {
+      if (focusIdx >= 2) {
+        moveFocus(-1);
+      } else if (focusIdx === 0) {
+        // email에서 위로 가면 skip으로
+        setFocus(4);
+      }
+    });
+
+    screen.key(['left', 'right'], () => {
+      // Login <-> Register 전환
       if (focusIdx === 2) {
-        focusIdx = 3;
-        focusOrder[focusIdx].focus();
-        screen.render();
+        setFocus(3);
       } else if (focusIdx === 3) {
-        focusIdx = 2;
-        focusOrder[focusIdx].focus();
-        screen.render();
+        setFocus(2);
       }
     });
 
