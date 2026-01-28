@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "sessionId": "6de6dfe1-d100-4f14-82a5-839e55b784cc",
+  "status": "running",
+  "startedAt": "2026-01-28T04:42:44.928Z",
+  "updatedAt": "2026-01-28T04:42:44.928Z",
+  "currentIteration": 0,
+  "maxIterations": 0,
+  "tasksCompleted": 0,
+  "isPaused": false,
+  "agentPlugin": "claude",
+  "trackerState": {
+    "plugin": "json",
+    "totalTasks": 0,
+    "tasks": []
+  },
+  "iterations": [],
+  "skippedTaskIds": [],
+  "cwd": "/Users/teamsparta/Documents/GitHub/devchat",
+  "activeTaskIds": [],
+  "subagentPanelVisible": false
+}

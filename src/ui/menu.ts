@@ -10,18 +10,63 @@ interface MenuOption {
   action: () => void | Promise<void>;
 }
 
+// 현재 활성화된 키 핸들러 목록 (정리용)
+let currentKeyHandlers: string[] = [];
+
+/**
+ * 화면의 모든 커스텀 키 핸들러를 제거합니다.
+ */
+function clearScreenKeys(screen: blessed.Widgets.Screen): void {
+  currentKeyHandlers.forEach((key) => {
+    try {
+      screen.unkey(key);
+    } catch {
+      // 이미 제거된 핸들러는 무시
+    }
+  });
+  currentKeyHandlers = [];
+}
+
+/**
+ * 화면에 키 핸들러를 등록하고 추적합니다.
+ */
+function registerKey(screen: blessed.Widgets.Screen, keys: string | string[], handler: () => void): void {
+  const keyArray = Array.isArray(keys) ? keys : [keys];
+  keyArray.forEach((k) => {
+    if (!currentKeyHandlers.includes(k)) {
+      currentKeyHandlers.push(k);
+    }
+  });
+  screen.key(keys, handler);
+}
+
 /**
  * Main interactive menu for DevChat
  * Shows when user runs `devchat` without arguments
  */
 export async function showMainMenu(): Promise<void> {
-  const config = getConfig();
-
   const screen = blessed.screen({
     smartCSR: true,
     title: 'DevChat',
     fullUnicode: true,
   });
+
+  rebuildMainMenu(screen);
+
+  return new Promise(() => {
+    // Keep running
+  });
+}
+
+/**
+ * 메인 메뉴 UI를 (재)구성합니다.
+ */
+function rebuildMainMenu(screen: blessed.Widgets.Screen): void {
+  const config = getConfig();
+
+  // Clear screen content and key handlers
+  screen.children.forEach((child) => child.destroy());
+  clearScreenKeys(screen);
 
   // Header box
   const header = blessed.box({
@@ -146,17 +191,13 @@ export async function showMainMenu(): Promise<void> {
   });
 
   // Key bindings
-  screen.key(['q', 'C-c'], () => {
+  registerKey(screen, ['q', 'C-c'], () => {
     screen.destroy();
     process.exit(0);
   });
 
   menuList.focus();
   screen.render();
-
-  return new Promise(() => {
-    // Keep running
-  });
 }
 
 /**
@@ -179,8 +220,9 @@ function showHostMenu(screen: blessed.Widgets.Screen): void {
  * 저장된 방 목록 메뉴
  */
 function showSavedRoomsMenu(screen: blessed.Widgets.Screen, savedRooms: SavedRoomSummary[]): void {
-  // Clear screen content
+  // Clear screen content and key handlers
   screen.children.forEach((child) => child.destroy());
+  clearScreenKeys(screen);
 
   const listBox = blessed.box({
     top: 'center',
@@ -268,7 +310,7 @@ function showSavedRoomsMenu(screen: blessed.Widgets.Screen, savedRooms: SavedRoo
   });
 
   // 삭제 키 핸들러
-  screen.key(['d', 'D'], () => {
+  registerKey(screen, ['d', 'D'], () => {
     const selectedIndex = roomList.selected as number;
     if (selectedIndex < savedRooms.length) {
       const selectedRoom = savedRooms[selectedIndex];
@@ -276,9 +318,11 @@ function showSavedRoomsMenu(screen: blessed.Widgets.Screen, savedRooms: SavedRoo
     }
   });
 
-  screen.key(['escape'], () => {
-    screen.destroy();
-    showMainMenu();
+  registerKey(screen, 'escape', () => {
+    clearScreenKeys(screen);
+    screen.children.forEach((child) => child.destroy());
+    // 메인 메뉴 UI를 다시 구성
+    rebuildMainMenu(screen);
   });
 
   roomList.focus();
@@ -355,9 +399,10 @@ function showDeleteConfirmation(
 
   screen.append(confirmBox);
 
-  yesBtn.on('press', () => {
+  const doDelete = () => {
     deleteRoom(room.id);
     confirmBox.destroy();
+    clearScreenKeys(screen);
     
     // 목록 새로고침
     const updatedRooms = getSavedRooms();
@@ -366,29 +411,19 @@ function showDeleteConfirmation(
     } else {
       showSavedRoomsMenu(screen, updatedRooms);
     }
-  });
+  };
 
-  noBtn.on('press', () => {
+  const doCancel = () => {
     confirmBox.destroy();
-    screen.render();
-  });
+    clearScreenKeys(screen);
+    showSavedRoomsMenu(screen, savedRooms);
+  };
 
-  screen.key(['y', 'Y'], () => {
-    deleteRoom(room.id);
-    confirmBox.destroy();
-    
-    const updatedRooms = getSavedRooms();
-    if (updatedRooms.length === 0) {
-      showNewRoomForm(screen);
-    } else {
-      showSavedRoomsMenu(screen, updatedRooms);
-    }
-  });
+  yesBtn.on('press', doDelete);
+  noBtn.on('press', doCancel);
 
-  screen.key(['n', 'N'], () => {
-    confirmBox.destroy();
-    screen.render();
-  });
+  registerKey(screen, ['y', 'Y'], doDelete);
+  registerKey(screen, ['n', 'N', 'escape'], doCancel);
 
   yesBtn.focus();
   screen.render();
@@ -400,8 +435,9 @@ function showDeleteConfirmation(
 function showNewRoomForm(screen: blessed.Widgets.Screen, prefilledRoom?: SavedRoomSummary): void {
   const config = getConfig();
 
-  // Clear screen content
+  // Clear screen content and key handlers
   screen.children.forEach((child) => child.destroy());
+  clearScreenKeys(screen);
 
   const formBox = blessed.box({
     top: 'center',
@@ -535,7 +571,7 @@ function showNewRoomForm(screen: blessed.Widgets.Screen, prefilledRoom?: SavedRo
     parent: formBox,
     bottom: 0,
     left: 2,
-    content: '{gray-fg}[Tab] 다음 필드  [Enter] 확인  [Esc] 취소{/gray-fg}',
+    content: '{gray-fg}[Tab/↑↓] 이동  [Enter] 확인  [Esc] 취소{/gray-fg}',
     tags: true,
   });
 
@@ -564,8 +600,10 @@ function showNewRoomForm(screen: blessed.Widgets.Screen, prefilledRoom?: SavedRo
     });
   });
 
-  screen.key(['tab'], focusNext);
-  screen.key(['S-tab'], focusPrev);
+  registerKey(screen, 'tab', focusNext);
+  registerKey(screen, 'S-tab', focusPrev);
+  registerKey(screen, 'down', focusNext);
+  registerKey(screen, 'up', focusPrev);
 
   startBtn.on('press', async () => {
     const port = parseInt(portInput.getValue()) || config.port;
@@ -580,22 +618,16 @@ function showNewRoomForm(screen: blessed.Widgets.Screen, prefilledRoom?: SavedRo
   });
 
   cancelBtn.on('press', () => {
-    screen.destroy();
     // 저장된 방이 있으면 목록으로, 없으면 메인 메뉴로
     if (hasSavedRooms()) {
-      showHostMenu(screen);
+      showSavedRoomsMenu(screen, getSavedRooms());
     } else {
-      showMainMenu();
+      rebuildMainMenu(screen);
     }
   });
 
-  screen.key(['escape'], () => {
-    screen.destroy();
-    if (hasSavedRooms()) {
-      showMainMenu(); // 새 방 폼에서 ESC 누르면 메인 메뉴로
-    } else {
-      showMainMenu();
-    }
+  registerKey(screen, 'escape', () => {
+    rebuildMainMenu(screen);
   });
 
   portInput.focus();
@@ -608,8 +640,9 @@ function showNewRoomForm(screen: blessed.Widgets.Screen, prefilledRoom?: SavedRo
 function showJoinMenu(screen: blessed.Widgets.Screen): void {
   const config = getConfig();
 
-  // Clear screen content
+  // Clear screen content and key handlers
   screen.children.forEach((child) => child.destroy());
+  clearScreenKeys(screen);
 
   const formBox = blessed.box({
     top: 'center',
@@ -721,7 +754,7 @@ function showJoinMenu(screen: blessed.Widgets.Screen): void {
     parent: formBox,
     bottom: 0,
     left: 2,
-    content: '{gray-fg}[Tab] 다음 필드  [Enter] 확인  [Esc] 취소{/gray-fg}',
+    content: '{gray-fg}[Tab/↑↓] 이동  [Enter] 확인  [Esc] 취소{/gray-fg}',
     tags: true,
   });
 
@@ -750,8 +783,10 @@ function showJoinMenu(screen: blessed.Widgets.Screen): void {
     });
   });
 
-  screen.key(['tab'], focusNext);
-  screen.key(['S-tab'], focusPrev);
+  registerKey(screen, 'tab', focusNext);
+  registerKey(screen, 'S-tab', focusPrev);
+  registerKey(screen, 'down', focusNext);
+  registerKey(screen, 'up', focusPrev);
 
   joinBtn.on('press', async () => {
     const address = addressInput.getValue() || `localhost:${config.port}`;
@@ -765,13 +800,11 @@ function showJoinMenu(screen: blessed.Widgets.Screen): void {
   });
 
   cancelBtn.on('press', () => {
-    screen.destroy();
-    showMainMenu();
+    rebuildMainMenu(screen);
   });
 
-  screen.key(['escape'], () => {
-    screen.destroy();
-    showMainMenu();
+  registerKey(screen, 'escape', () => {
+    rebuildMainMenu(screen);
   });
 
   addressInput.focus();
@@ -785,8 +818,9 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
   const config = getConfig();
   const themes = getThemeNames();
 
-  // Clear screen content
+  // Clear screen content and key handlers
   screen.children.forEach((child) => child.destroy());
+  clearScreenKeys(screen);
 
   const formBox = blessed.box({
     top: 'center',
@@ -864,8 +898,9 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     width: 20,
     height: themes.length + 2,
     items: themes,
-    keys: true,
-    vi: true,
+    keys: false,  // 직접 키 핸들링
+    vi: false,
+    mouse: true,
     border: {
       type: 'line',
     },
@@ -966,19 +1001,29 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
 
   screen.append(formBox);
 
-  // Focus handling
+  // Focus handling - themeList는 특별 처리
   const focusableElements = [nickInput, toggleInput, themeList, portInput, saveBtn, cancelBtn];
   let focusIndex = 0;
+  let themeListFocused = false;
 
   const focusNext = () => {
+    // 테마 리스트에서 포커스가 있을 때는 다음으로 넘어감
+    themeListFocused = false;
     focusIndex = (focusIndex + 1) % focusableElements.length;
     focusableElements[focusIndex].focus();
+    if (focusableElements[focusIndex] === themeList) {
+      themeListFocused = true;
+    }
     screen.render();
   };
 
   const focusPrev = () => {
+    themeListFocused = false;
     focusIndex = (focusIndex - 1 + focusableElements.length) % focusableElements.length;
     focusableElements[focusIndex].focus();
+    if (focusableElements[focusIndex] === themeList) {
+      themeListFocused = true;
+    }
     screen.render();
   };
 
@@ -986,11 +1031,45 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
   focusableElements.forEach((el, idx) => {
     el.on('focus', () => {
       focusIndex = idx;
+      themeListFocused = el === themeList;
     });
   });
 
-  screen.key(['tab'], focusNext);
-  screen.key(['S-tab'], focusPrev);
+  // 위/아래 화살표 키 핸들링
+  registerKey(screen, 'down', () => {
+    if (themeListFocused) {
+      // 테마 리스트 내에서 아래로 이동
+      const currentSelect = themeList.selected as number;
+      if (currentSelect < themes.length - 1) {
+        themeList.select(currentSelect + 1);
+        screen.render();
+      } else {
+        // 마지막 항목이면 다음 필드로
+        focusNext();
+      }
+    } else {
+      focusNext();
+    }
+  });
+
+  registerKey(screen, 'up', () => {
+    if (themeListFocused) {
+      // 테마 리스트 내에서 위로 이동
+      const currentSelect = themeList.selected as number;
+      if (currentSelect > 0) {
+        themeList.select(currentSelect - 1);
+        screen.render();
+      } else {
+        // 첫 번째 항목이면 이전 필드로
+        focusPrev();
+      }
+    } else {
+      focusPrev();
+    }
+  });
+
+  registerKey(screen, 'tab', focusNext);
+  registerKey(screen, 'S-tab', focusPrev);
 
   saveBtn.on('press', () => {
     const nick = nickInput.getValue();
@@ -1003,18 +1082,15 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
     if (selectedTheme) setConfig('theme', selectedTheme);
     if (port && !isNaN(port)) setConfig('port', port);
 
-    screen.destroy();
-    showMainMenu();
+    rebuildMainMenu(screen);
   });
 
   cancelBtn.on('press', () => {
-    screen.destroy();
-    showMainMenu();
+    rebuildMainMenu(screen);
   });
 
-  screen.key(['escape'], () => {
-    screen.destroy();
-    showMainMenu();
+  registerKey(screen, 'escape', () => {
+    rebuildMainMenu(screen);
   });
 
   nickInput.focus();
@@ -1025,8 +1101,9 @@ function showSettingsMenu(screen: blessed.Widgets.Screen): void {
  * Help screen
  */
 function showHelpScreen(screen: blessed.Widgets.Screen): void {
-  // Clear screen content
+  // Clear screen content and key handlers
   screen.children.forEach((child) => child.destroy());
+  clearScreenKeys(screen);
 
   const helpBox = blessed.box({
     top: 'center',
@@ -1064,15 +1141,17 @@ function showHelpScreen(screen: blessed.Widgets.Screen): void {
   devchat host         채팅방 생성 (호스트)
   devchat join <addr>  채팅방 참여
   devchat config       설정 관리
+  devchat rooms        저장된 방 관리
 
 {yellow-fg}Host 옵션{/yellow-fg}
   -p, --port <port>    리스닝 포트 (기본: 8080)
   -n, --name <name>    방 이름
   --nick <nickname>    닉네임
+  -r, --resume <id>    저장된 방 복원
 
 {yellow-fg}채팅 중 단축키{/yellow-fg}
   토글 키 (기본 \`)    홀드하면 채팅 표시
-  Ctrl+C              종료
+  Ctrl+C              종료 (방 자동 저장)
   Ctrl+T              테마 변경
   Ctrl+H              도움말
 
@@ -1097,9 +1176,8 @@ function showHelpScreen(screen: blessed.Widgets.Screen): void {
 
   screen.append(helpBox);
 
-  screen.key(['escape', 'q'], () => {
-    screen.destroy();
-    showMainMenu();
+  registerKey(screen, ['escape', 'q'], () => {
+    rebuildMainMenu(screen);
   });
 
   helpBox.focus();
