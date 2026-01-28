@@ -3,10 +3,10 @@
   "sessionId": "6a983301-b157-4b03-bd07-4011cf43e9c7",
   "status": "running",
   "startedAt": "2026-01-28T04:59:17.064Z",
-  "updatedAt": "2026-01-28T07:18:04.239Z",
-  "currentIteration": 14,
+  "updatedAt": "2026-01-28T07:19:59.320Z",
+  "currentIteration": 15,
   "maxIterations": 0,
-  "tasksCompleted": 14,
+  "tasksCompleted": 15,
   "isPaused": false,
   "agentPlugin": "claude",
   "trackerState": {
@@ -119,8 +119,8 @@
       {
         "id": "US-018",
         "title": "에러 처리 및 사용자 피드백 개선",
-        "status": "open",
-        "completedInSession": false
+        "status": "completed",
+        "completedInSession": true
       }
     ]
   },
@@ -264,6 +264,16 @@
       "durationMs": 80986,
       "startedAt": "2026-01-28T07:11:46.258Z",
       "endedAt": "2026-01-28T07:13:07.244Z"
+    },
+    {
+      "iteration": 15,
+      "status": "completed",
+      "taskId": "US-018",
+      "taskTitle": "에러 처리 및 사용자 피드백 개선",
+      "taskCompleted": true,
+      "durationMs": 295923,
+      "startedAt": "2026-01-28T07:13:08.309Z",
+      "endedAt": "2026-01-28T07:18:04.232Z"
     }
   ],
   "skippedTaskIds": [],

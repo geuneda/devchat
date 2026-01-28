@@ -209,6 +209,7 @@ function createTextRpgPlugin(): PluginWithState {
   /rpg heal - 회복
   /rpg shop - 상점
   /rpg buy <item> - 구매
+  /rpg dungeon - 던전 탐험
 `);
           return;
         }
@@ -334,6 +335,24 @@ function createTextRpgPlugin(): PluginWithState {
               player.inventory.push(item);
             }
             ctx.broadcast(`✅ ${it.name} 구매!`);
+            break;
+          }
+
+          case 'dungeon': {
+            let dungeonLevel = dungeonLevels.get(ctx.user.id) || 1;
+            const subArg = args[1];
+
+            if (subArg === 'up' && dungeonLevel < 6) {
+              dungeonLevel++;
+              dungeonLevels.set(ctx.user.id, dungeonLevel);
+              ctx.broadcast(`🏰 던전 ${dungeonLevel}층으로 내려갑니다. 몬스터가 더 강해집니다!`);
+            } else if (subArg === 'down' && dungeonLevel > 1) {
+              dungeonLevel--;
+              dungeonLevels.set(ctx.user.id, dungeonLevel);
+              ctx.broadcast(`🏰 던전 ${dungeonLevel}층으로 올라갑니다.`);
+            } else {
+              ctx.broadcast(`🏰 현재 던전 ${dungeonLevel}층 - /rpg dungeon up (내려가기) /rpg dungeon down (올라가기)`);
+            }
             break;
           }
 

@@ -617,3 +617,57 @@ US-018 (에러 처리 및 사용자 피드백 개선)을 구현했습니다.
 타입체크와 빌드 모두 성공했습니다.
 
 ---
+## ✓ Iteration 15 - US-018: 에러 처리 및 사용자 피드백 개선
+*2026-01-28T07:18:04.303Z (296s)*
+
+**Status:** Completed
+
+**Notes:**
+n   - `getServerErrorMessage()`: 서버 시작 에러에 대한 상세한 안내\n   - `getDisconnectMessage()`: 연결 끊김 시 재연결 안내\n   - `getUnknownCommandMessage()`: 알 수 없는 명령어 입력 시 `/help` 안내\n\n2. **클라이언트 에러 처리 개선** (`src/client/index.ts`):\n   - 연결 끊김 시 재연결 명령어 안내\n   - 연결 실패 시 원인과 해결 방법 제시\n\n3. **서버 에러 처리 개선** (`src/server/index.ts`):\n   - 포트 충돌 시 대안 포트 및 포트 확인 명령어 안내\n   - 권한 문제 시 1024 이상 포트 사용 제안\n\n4. **명령어 에러 처리 개선** (`src/ui/index.ts`):\n   - 알 수 없는 명령어 입력 시 일반 메시지로 전송하지 않고 `/help` 안내 표시\n\n타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+
+## 2026-01-28 - US-012
+
+- 구현한 내용: text-rpg 플러그인에 /rpg dungeon 명령어 추가
+- 변경된 파일:
+  - `src/plugins/index.ts` - 내장 textRpgPlugin에 dungeon 명령어 추가
+- **배운 점:**
+  - **내장 플러그인 vs 외부 플러그인 차이**:
+    - `plugins/text-rpg/index.ts`: 외부 플러그인 (완전한 기능 구현)
+    - `src/plugins/index.ts`: 내장 플러그인 (dungeon 명령어 누락되어 있었음)
+  - **switch-case 패턴**: 내장 플러그인은 단일 `/rpg` 명령어에서 switch-case로 서브커맨드 처리
+    - 외부 플러그인은 `/rpg-start`, `/rpg-hunt` 등 별도 명령어로 분리
+  - **dungeon 명령어 구현** (`src/plugins/index.ts:339-352`):
+    - `dungeonLevels` Map으로 플레이어별 던전 레벨 관리
+    - `up`: 던전 레벨 +1 (최대 6)
+    - `down`: 던전 레벨 -1 (최소 1)
+    - 인자 없이 호출 시 현재 층 및 명령어 안내
+
+---
+## ✓ Iteration 16 - US-012: text-rpg 플러그인 수정
+*2026-01-28*
+
+**Status:** Completed
+
+**Notes:**
+US-012 (text-rpg 플러그인 수정)을 완료했습니다.
+
+**완료 조건 충족 현황:**
+
+| 조건 | 상태 | 위치 |
+|------|------|------|
+| /rpg - RPG 도움말 표시 | ✅ | `src/plugins/index.ts:201-214` |
+| /rpg start - 게임 시작, 캐릭터 생성 | ✅ | `src/plugins/index.ts:217-220` |
+| /rpg status - 현재 상태 표시 | ✅ | `src/plugins/index.ts:222-224` |
+| /rpg hunt - 몬스터 사냥 시작 | ✅ | `src/plugins/index.ts:226-240` |
+| /rpg attack - 전투 중 공격 | ✅ | `src/plugins/index.ts:242-270` |
+| /rpg run - 전투에서 도망 | ✅ | `src/plugins/index.ts:273-293` |
+| /rpg heal - HP 회복 | ✅ | `src/plugins/index.ts:295-308` |
+| /rpg shop - 상점 표시 | ✅ | `src/plugins/index.ts:311-313` |
+| /rpg buy <아이템> - 아이템 구매 | ✅ | `src/plugins/index.ts:315-337` |
+| /rpg dungeon - 던전 탐험 | ✅ | `src/plugins/index.ts:339-352` (신규 추가) |
+
+타입체크와 빌드 모두 성공했습니다.
+
+---

@@ -211,10 +211,11 @@
         "/rpg buy <아이템> - 아이템 구매"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-011"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-013",
@@ -325,6 +326,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:18:04.233Z"
+    "updatedAt": "2026-01-28T07:19:59.316Z"
   }
 }
