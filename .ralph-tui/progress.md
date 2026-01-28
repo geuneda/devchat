@@ -199,3 +199,40 @@ Rcjnt","type":"message","role":"assistant","content":[{"type":"text","text":"## 
 ,"content":[{"type":"text","text":"US-006 완료 조건을 모두 검증했습니다.\n\n## 요약\n\nUS-006 (WebSocket 클라이언트 연결 기능)은 이미 완전히 구현되어 있습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| `devchat join localhost:8080 --nick 테스터` 실행 시 연결 | ✅ | `src/cli/join.ts:29-34` |\n| 연결 성공 시 채팅 UI 표시 | ✅ | `src/client/index.ts:91-124` |\n| 연결 실패 시 에러 메시지 표시 | ✅ | `src/cli/join.ts:35-38`, `src/client/index.ts:135-138` |\n| 호스트 측에서 새 유저 접속 알림 표시 | ✅ | `src/server/index.ts:127-133` |\n\n타입체크와 빌드 모두 성공했습니다.\n\n
 
 ---
+## ✓ Iteration 6 - US-007: 채팅 메시지 송수신 기능 수정
+*2026-01-28T05:08:12.992Z (61s)*
+
+**Status:** Completed
+
+**Notes:**
+"content":[{"type":"text","text":"## 요약\n\nUS-007 (채팅 메시지 송수신 기능)은 이미 완전히 구현되어 있습니다.\n\n**완료 조건 충족 현황:**\n\n| 조건 | 상태 | 위치 |\n|------|------|------|\n| 호스트와 클라이언트 모두 메시지 입력 및 전송 가능 | ✅ | `src/ui/index.ts:276-306` (inputBox submit 핸들러) |\n| 전송한 메시지가 모든 참여자에게 표시 | ✅ | `src/server/index.ts:149-156` (broadcast 함수) |\n| 메시지에 발신자 닉네임 표시 | ✅ | `src/core/chat.ts:77` (`${sender}: ${content}` 포맷) |\n| 메시지 입력 중에도 수신 메시지 표시 | ✅ | `src/ui/index.ts:313-324` (100ms 폴링으로 비동기 메시지 수신) |\n\n타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+
+## 2026-01-28 - US-017
+
+- 구현한 내용: CLI 명령어 전체 점검 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - 모든 CLI 명령어가 이미 완전히 구현되어 있었음
+  - **CLI 엔트리 포인트** (`src/index.ts`):
+    - Commander.js 기반 CLI 프레임워크 사용
+    - 서브커맨드 없이 실행 시 `showMainMenu()` 호출로 인터랙티브 메뉴 표시 (12-16줄)
+  - **host 명령어** (`src/cli/host.ts`):
+    - `-p, --port <port>`: 포트 설정
+    - `-n, --name <name>`: 방 이름 설정
+    - `--nick <nickname>`: 닉네임 설정
+    - `-r, --resume <roomId>`: 저장된 방 복원
+  - **join 명령어** (`src/cli/join.ts`):
+    - `<address>` 필수 인자: 서버 주소 (host:port 형식)
+    - `--nick <nickname>`: 닉네임 설정
+  - **config 명령어** (`src/cli/config.ts`):
+    - `--nick`, `--toggle-key`, `--theme`, `--port`: 설정값 변경
+    - `--list`, `--themes`, `--reset`, `--path`: 조회/관리
+  - **rooms 명령어** (`src/cli/rooms.ts`):
+    - 기본 실행: 저장된 방 목록 표시
+    - `delete <roomId>`: 방 삭제
+    - `info <roomId>`: 방 상세 정보
+    - `path`: 저장 파일 경로
+
+---
