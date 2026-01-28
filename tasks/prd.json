@@ -229,10 +229,11 @@
         "q 또는 Esc로 게임 UI 종료 후 채팅으로 복귀"
       ],
       "priority": 3,
-      "passes": false,
+      "passes": true,
       "dependsOn": [
         "US-011"
-      ]
+      ],
+      "completionNotes": "Completed by agent"
     },
     {
       "id": "US-014",
@@ -326,6 +327,6 @@
     }
   ],
   "metadata": {
-    "updatedAt": "2026-01-28T07:19:59.316Z"
+    "updatedAt": "2026-01-28T07:21:18.414Z"
   }
 }

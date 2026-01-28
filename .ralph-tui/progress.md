@@ -671,3 +671,68 @@ US-012 (text-rpg 플러그인 수정)을 완료했습니다.
 타입체크와 빌드 모두 성공했습니다.
 
 ---
+## ✓ Iteration 16 - US-012: text-rpg 플러그인 수정
+*2026-01-28T07:19:59.380Z (114s)*
+
+**Status:** Completed
+
+**Notes:**
+tus - 상태 표시 | ✅ | `src/plugins/index.ts:222-224` |\n| /rpg hunt - 몬스터 사냥 | ✅ | `src/plugins/index.ts:226-240` |\n| /rpg attack - 공격 | ✅ | `src/plugins/index.ts:242-270` |\n| /rpg run - 도망 | ✅ | `src/plugins/index.ts:273-293` |\n| /rpg heal - 회복 | ✅ | `src/plugins/index.ts:295-308` |\n| /rpg shop - 상점 | ✅ | `src/plugins/index.ts:311-313` |\n| /rpg buy <아이템> - 구매 | ✅ | `src/plugins/index.ts:315-337` |\n| /rpg dungeon - 던전 탐험 | ✅ | `src/plugins/index.ts:339-352` (신규 추가) |\n\n타입체크와 빌드 모두 성공했습니다.\n\n
+
+---
+
+## 2026-01-28 - US-013
+
+- 구현한 내용: game-ui-example 플러그인 검증 (이미 구현됨)
+- 변경된 파일: 없음 (기존 코드 검증만)
+- **배운 점:**
+  - US-013 기능은 기존에 완전히 구현되어 있었음
+  - **플러그인 구조** (`plugins/game-ui-example/index.ts`):
+    - `PluginWithUI` 인터페이스 구현 (name, commands, hasUI, createUI, onLoad, onUnload)
+    - `/game-ui`: 게임 UI 시작 명령어 (326-332줄)
+    - `/game-ui-help`: 도움말 표시 (333-350줄)
+  - **게임 UI 구성요소** (`runGameUI()` 함수):
+    - `createGameScreen()`: 전체 화면 게임 컨테이너 생성 (84-88줄)
+    - `headerBox`: 점수/턴 표시 (93-101줄)
+    - `playerBox`: 플레이어 HP/MP/ATK/DEF 표시 (104-112줄)
+    - `enemyBox`: 적 HP/ATK 표시 (115-123줄)
+    - `actionList`: 액션 메뉴 - Attack, Defend, Magic, Heal, Run (126-136줄)
+    - `logBox`: 배틀 로그 표시 (139-147줄)
+    - `helpBox`: 조작 도움말 (150-158줄)
+  - **HP/MP 바 렌더링**:
+    - `createColoredStatBar()` 함수 사용 (`src/plugins/ui.ts:360-374`)
+    - blessed 태그 형식으로 컬러 출력: `{color-fg}...{/color-fg}`
+    - HP 상태에 따라 색상 변경: green(>50%) → yellow(>25%) → red
+  - **키보드 네비게이션**:
+    - list 컴포넌트의 `keys: true`, `vi: true`, `mouse: true` 옵션으로 자동 지원
+    - `actionList.on('select', ...)`: Enter 키 액션 실행
+    - `ui.onKey(['q', 'escape'], ...)`: 종료 처리
+  - **게임 로직**:
+    - `GameState` 인터페이스로 상태 관리 (13-28줄)
+    - `spawnEnemy()`: 점수 기반 적 생성 (51-71줄)
+    - `calculateDamage()`: 공격/방어 계산 (74-78줄)
+    - `executeAction()`: 5가지 액션 처리 (267-293줄)
+    - `checkBattleEnd()`: 승리/패배 판정 및 새 적 생성 (244-265줄)
+
+---
+## ✓ Iteration 17 - US-013: game-ui-example 플러그인 수정
+*2026-01-28*
+
+**Status:** Completed
+
+**Notes:**
+US-013 (game-ui-example 플러그인 수정)은 이미 완전히 구현되어 있습니다.
+
+**완료 조건 충족 현황:**
+
+| 조건 | 상태 | 위치 |
+|------|------|------|
+| 플러그인 명령어로 게임 UI 실행 가능 | ✅ | `plugins/game-ui-example/index.ts:326-332` (`/game-ui` 명령어) |
+| 전체 화면 게임 UI 표시 | ✅ | `plugins/game-ui-example/index.ts:84-88` (`createGameScreen()`) |
+| HP/MP 바 표시 및 업데이트 | ✅ | `plugins/game-ui-example/index.ts:172-177` (`createColoredStatBar()` 사용) |
+| 액션 메뉴 키보드 네비게이션 작동 | ✅ | `plugins/game-ui-example/index.ts:126-136` (list 컴포넌트 `keys: true`) |
+| q 또는 Esc로 게임 UI 종료 후 채팅으로 복귀 | ✅ | `plugins/game-ui-example/index.ts:309-311` |
+
+타입체크와 빌드 모두 성공했습니다.
+
+---
